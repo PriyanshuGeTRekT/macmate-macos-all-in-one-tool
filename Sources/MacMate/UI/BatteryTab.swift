@@ -1,3 +1,4 @@
+import Charts
 import SwiftUI
 
 struct BatteryTab: View {
@@ -29,6 +30,8 @@ struct BatteryTab: View {
             } footer: {
                 Text(footnote)
             }
+            BatteryHistorySections()
+            DeviceBatterySection()
             Section("Battery Health") {
                 LabeledContent("Maximum capacity", value: info.designMah > 0 ? "\(info.healthPercent)%" : "—")
                 LabeledContent("Cycle count", value: "\(info.cycleCount)")
@@ -175,6 +178,207 @@ private struct EnergyRow: View {
                     NSWorkspace.shared.runningApplications.first { $0.bundleURL?.path == path }?.terminate()
                 }
                 Button("Show in Finder") { NSWorkspace.shared.selectFile(path, inFileViewerRootedAtPath: "") }
+            }
+        }
+    }
+}
+
+// MARK: - History
+
+/// "Battery Level" chart and "Most Energy Used" list for the last 24 hours or 7 days.
+struct BatteryHistorySections: View {
+    @ObservedObject private var history = BatteryHistory.shared
+    @ObservedObject private var battery = BatteryService.shared
+    @AppStorage("battery.historyRange") private var rangeValue = BatteryHistoryRange.day.rawValue
+
+    private var range: BatteryHistoryRange { BatteryHistoryRange(rawValue: rangeValue) ?? .day }
+
+    var body: some View {
+        let now = Date()
+        let points = history.points(for: range, now: now)
+        Section {
+            if points.count < 2 {
+                Text("Battery levels appear here as MacMate records them.")
+                    .foregroundStyle(.secondary)
+            } else {
+                BatteryLevelChart(points: points, range: range, now: now)
+                    .frame(height: 120)
+                    .padding(.vertical, 4)
+            }
+        } header: {
+            HStack {
+                Text("Battery Level")
+                Spacer()
+                Picker("Range", selection: $rangeValue) {
+                    ForEach(BatteryHistoryRange.allCases) { Text($0.title).tag($0.rawValue) }
+                }
+                .pickerStyle(.segmented)
+                .labelsHidden()
+                .fixedSize()
+                .controlSize(.small)
+            }
+        } footer: {
+            Text(drainText(now: now))
+        }
+
+        let top = history.topApps(for: range, now: now)
+        if !top.isEmpty {
+            Section {
+                let most = top.first?.joules ?? 1
+                ForEach(top) { usage in
+                    HStack(spacing: 10) {
+                        AppIcon(path: usage.bundlePath)
+                        VStack(alignment: .leading, spacing: 4) {
+                            HStack(alignment: .firstTextBaseline) {
+                                Text(usage.name).lineLimit(1)
+                                Spacer(minLength: 8)
+                                Text(Fmt.energy(joules: usage.joules)).monospacedDigit()
+                            }
+                            CapacityBar(fraction: usage.joules / max(most, 0.001), color: .accentColor)
+                            if battery.info.fullWh > 0 {
+                                Text(shareText(usage.joules))
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                    .monospacedDigit()
+                            }
+                        }
+                    }
+                    .padding(.vertical, 2)
+                }
+            } header: {
+                Text("Most Energy Used")
+            } footer: {
+                Text("Processor energy per app over the \(range == .day ? "last 24 hours" : "last 7 days"), plugged in or not.")
+            }
+        }
+    }
+
+    private func shareText(_ joules: Double) -> String {
+        let share = joules / 3600 / battery.info.fullWh * 100
+        return share >= 1 ? "\(Int(share.rounded()))% of a full charge" : "under 1% of a full charge"
+    }
+
+    private func drainText(now: Date) -> String {
+        let drain = history.drain(for: range, now: now)
+        guard drain.hours >= 0.25 else {
+            return "Recorded while MacMate is running. Gaps are times the Mac was asleep or MacMate was closed."
+        }
+        let minutes = Int((drain.hours * 60).rounded())
+        var text = "On battery for \(Fmt.duration(minutes: minutes))"
+        if drain.percent <= 100 { text += ", using \(drain.percent)% of the charge" }
+        if drain.hours >= 0.5 { text += String(format: ", about %.0f%% per hour", Double(drain.percent) / drain.hours) }
+        return text + "."
+    }
+}
+
+/// Charge level over time; times spent charging are shaded green.
+struct BatteryLevelChart: View {
+    let points: [BatteryChartPoint]
+    let range: BatteryHistoryRange
+    let now: Date
+
+    private struct Span: Identifiable {
+        let id: Int
+        let start: Date
+        let end: Date
+    }
+
+    /// Stretches of time spent charging.
+    private var charging: [Span] {
+        var spans: [Span] = []
+        var start: Date?
+        for (a, b) in zip(points, points.dropFirst()) {
+            if a.charging, a.run == b.run {
+                if start == nil { start = a.date }
+            } else if let s = start {
+                spans.append(Span(id: spans.count, start: s, end: a.date))
+                start = nil
+            }
+        }
+        if let s = start, let last = points.last { spans.append(Span(id: spans.count, start: s, end: last.date)) }
+        return spans.filter { $0.end > $0.start }
+    }
+
+    /// Whole hours or midnights inside the range, leaving room at the right edge for the labels.
+    private func ticks(every step: TimeInterval) -> [Date] {
+        let calendar = Calendar.current
+        let start = now.addingTimeInterval(-range.seconds)
+        var date = step >= 86_400 ? calendar.startOfDay(for: start).addingTimeInterval(86_400)
+            : calendar.dateInterval(of: .hour, for: start)?.end ?? start
+        if step < 86_400 {
+            // Align to multiples of the step (12 AM, 6 AM, 12 PM, 6 PM).
+            while calendar.component(.hour, from: date) % Int(step / 3600) != 0 { date.addTimeInterval(3600) }
+        }
+        var result: [Date] = []
+        while date < now.addingTimeInterval(-range.seconds * 0.08) {
+            result.append(date)
+            date.addTimeInterval(step)
+        }
+        return result
+    }
+
+    var body: some View {
+        Chart {
+            ForEach(charging) { span in
+                RectangleMark(xStart: .value("Start", span.start), xEnd: .value("End", span.end),
+                              yStart: .value("Low", 0), yEnd: .value("High", 100))
+                    .foregroundStyle(Color.green.opacity(0.13))
+            }
+            ForEach(points) { point in
+                AreaMark(x: .value("Time", point.date), y: .value("Charge", point.percent),
+                         series: .value("Run", point.run), stacking: .unstacked)
+                    .foregroundStyle(LinearGradient(colors: [Color.green.opacity(0.32), Color.green.opacity(0.03)],
+                                                    startPoint: .top, endPoint: .bottom))
+                LineMark(x: .value("Time", point.date), y: .value("Charge", point.percent),
+                         series: .value("Run", point.run))
+                    .foregroundStyle(Color.green)
+                    .lineStyle(StrokeStyle(lineWidth: 1.6, lineCap: .round, lineJoin: .round))
+            }
+        }
+        .chartXScale(domain: now.addingTimeInterval(-range.seconds)...now)
+        .chartYScale(domain: 0...100)
+        .chartYAxis {
+            AxisMarks(position: .trailing, values: [0, 50, 100]) { value in
+                AxisGridLine()
+                AxisValueLabel { if let v = value.as(Int.self) { Text("\(v)%") } }
+            }
+        }
+        .chartXAxis {
+            if range == .day {
+                AxisMarks(values: ticks(every: 6 * 3600)) { _ in
+                    AxisGridLine()
+                    AxisValueLabel(format: .dateTime.hour())
+                }
+            } else {
+                AxisMarks(values: ticks(every: 86_400)) { _ in
+                    AxisGridLine()
+                    AxisValueLabel(format: .dateTime.weekday(.abbreviated))
+                }
+            }
+        }
+        .accessibilityLabel("Battery level over the \(range == .day ? "last 24 hours" : "last 7 days")")
+    }
+}
+
+// MARK: - Devices
+
+/// AirPods, mice, keyboards and other connected accessories that report a battery level.
+struct DeviceBatterySection: View {
+    @ObservedObject private var devices = DeviceBatteries.shared
+
+    var body: some View {
+        if !devices.devices.isEmpty {
+            Section("Devices") {
+                ForEach(devices.devices) { device in
+                    LabeledContent {
+                        Text(device.levelText)
+                            .monospacedDigit()
+                            .foregroundStyle((device.lowest ?? 100) <= 20 ? Color.red : Color.secondary)
+                    } label: {
+                        Label(device.name, systemImage: device.symbol)
+                            .lineLimit(1)
+                    }
+                }
             }
         }
     }

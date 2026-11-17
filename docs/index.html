@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MacMate – Battery Monitor, Window Manager &amp; More for Mac</title>
+<meta name="description" content="Free, open-source Mac menu bar app: battery percentage, which app drains your battery, window manager, Alt-Tab, per-app volume, keep awake and uninstaller.">
+<link rel="canonical" href="https://priyanshugetrekt.github.io/macos-all-in-one-tool/">
+<meta name="author" content="Priyanshu Yadav">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+<link rel="icon" type="image/png" sizes="256x256" href="icon.png">
+<link rel="apple-touch-icon" href="icon.png">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="MacMate">
+<meta property="og:url" content="https://priyanshugetrekt.github.io/macos-all-in-one-tool/">
+<meta property="og:title" content="MacMate – the free all-in-one menu bar tool for Mac">
+<meta property="og:description" content="Battery percentage and per-app energy, window tiling, an Alt-Tab window switcher, mouse fixes, per-app volume, keep awake and a deep uninstaller in one free, open-source, native Mac app.">
+<meta property="og:image" content="https://priyanshugetrekt.github.io/macos-all-in-one-tool/og-image.png">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="MacMate app icon next to two screenshots of its menu bar panel: battery and energy by app, and window tiling.">
+<meta property="og:locale" content="en_US">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="MacMate – the free all-in-one menu bar tool for Mac">
+<meta name="twitter:description" content="Battery percentage and per-app energy, window tiling, an Alt-Tab window switcher, mouse fixes, per-app volume, keep awake and a deep uninstaller in one free, open-source Mac app.">
+<meta name="twitter:image" content="https://priyanshugetrekt.github.io/macos-all-in-one-tool/og-image.png">
+<meta name="twitter:image:alt" content="MacMate app icon next to two screenshots of its menu bar panel: battery and energy by app, and window tiling.">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "MacMate",
+  "description": "A free, open-source, native macOS menu bar utility: battery percentage and per-app energy in watts, battery history, window tiling and an Alt-Tab window switcher, third-party mouse fixes and key remapping, per-app volume, external monitor brightness, keep awake, calendar, system monitor, clipboard history and an app uninstaller that removes leftover files.",
+  "url": "https://priyanshugetrekt.github.io/macos-all-in-one-tool/",
+  "image": "https://priyanshugetrekt.github.io/macos-all-in-one-tool/icon.png",
+  "operatingSystem": "macOS 26 or later",
+  "applicationCategory": "UtilitiesApplication",
+  "softwareVersion": "1.1.0",
+  "softwareRequirements": "Mac with Apple silicon",
+  "downloadUrl": "https://github.com/PriyanshuGeTRekT/macos-all-in-one-tool/releases/latest/download/MacMate.zip",
+  "installUrl": "https://github.com/PriyanshuGeTRekT/macos-all-in-one-tool/releases/latest/download/MacMate.zip",
+  "license": "https://github.com/PriyanshuGeTRekT/macos-all-in-one-tool/blob/main/LICENSE",
+  "isAccessibleForFree": true,
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  },
+  "author": {
+    "@type": "Person",
+    "name": "Priyanshu Yadav",
+    "url": "https://github.com/PriyanshuGeTRekT",
+    "sameAs": ["https://github.com/PriyanshuGeTRekT"]
+  },
+  "screenshot": [
+    "https://priyanshugetrekt.github.io/macos-all-in-one-tool/screenshots/battery.png",
+    "https://priyanshugetrekt.github.io/macos-all-in-one-tool/screenshots/windows.png",
+    "https://priyanshugetrekt.github.io/macos-all-in-one-tool/screenshots/input.png",
+    "https://priyanshugetrekt.github.io/macos-all-in-one-tool/screenshots/sound.png",
+    "https://priyanshugetrekt.github.io/macos-all-in-one-tool/screenshots/calendar.png",
+    "https://priyanshugetrekt.github.io/macos-all-in-one-tool/screenshots/monitor.png",
+    "https://priyanshugetrekt.github.io/macos-all-in-one-tool/screenshots/uninstall.png"
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "How do I show battery percentage in the Mac menu bar?",
+      "acceptedAnswer": {"@type": "Answer", "text": "Install MacMate. The percentage is always visible in the menu bar, and in Settings you can add time remaining, system watts, CPU load or download speed next to it."}
+    },
+    {
+      "@type": "Question",
+      "name": "How can I see which app is draining my MacBook battery?",
+      "acceptedAnswer": {"@type": "Answer", "text": "Open MacMate’s Battery tab. Apps are ranked by real power draw in watts, with the percent per hour each one costs. Battery history shows the last 24 hours or 7 days, and MacMate can alert you when an app suddenly starts using a lot of energy."}
+    },
+    {
+      "@type": "Question",
+      "name": "Is there a free window manager for Mac like Windows snap?",
+      "acceptedAnswer": {"@type": "Answer", "text": "Yes. MacMate snaps windows to halves, quarters and thirds with keyboard shortcuts or by dragging them to a screen edge, and its ⌥Tab switcher shows a thumbnail of every window, like Alt-Tab on Windows."}
+    },
+    {
+      "@type": "Question",
+      "name": "How do I reverse mouse scrolling on Mac without changing the trackpad?",
+      "acceptedAnswer": {"@type": "Answer", "text": "Turn on “Reverse wheel direction” in MacMate’s mouse settings. It affects ordinary mice only, so the trackpad keeps natural scrolling."}
+    },
+    {
+      "@type": "Question",
+      "name": "Can I set a different volume for each app on Mac?",
+      "acceptedAnswer": {"@type": "Answer", "text": "Yes. MacMate’s Sound tab has a volume slider for each app that plays audio, and switches the output device in one click."}
+    },
+    {
+      "@type": "Question",
+      "name": "How do I keep my Mac from sleeping?",
+      "acceptedAnswer": {"@type": "Answer", "text": "Open Keep Awake and pick a duration, or choose “Until I Turn It Off”. You decide whether the display stays on too."}
+    },
+    {
+      "@type": "Question",
+      "name": "How do I completely uninstall an app on Mac, including leftover files?",
+      "acceptedAnswer": {"@type": "Answer", "text": "Open Tools › Uninstall Apps, pick the app, review the files MacMate found and click Move to Trash. It can also find leftovers of apps you have already deleted."}
+    },
+    {
+      "@type": "Question",
+      "name": "Why does macOS say MacMate cannot be opened?",
+      "acceptedAnswer": {"@type": "Answer", "text": "MacMate is not notarized by Apple, so macOS blocks the first launch. Open System Settings › Privacy & Security, scroll down and click Open Anyway next to MacMate. You only need to do this once."}
+    },
+    {
+      "@type": "Question",
+      "name": "Does MacMate work on Intel Macs?",
+      "acceptedAnswer": {"@type": "Answer", "text": "No. It needs a Mac with Apple silicon and macOS 26 or later."}
+    },
+    {
+      "@type": "Question",
+      "name": "Is MacMate free and safe?",
+      "acceptedAnswer": {"@type": "Answer", "text": "Yes. MacMate is free and open source under the MIT License. It has no accounts or analytics, its only network request is the check for updates, and its cleaners move files to the Trash instead of deleting them."}
+    }
+  ]
+}
+</script>
+
+<style>
+:root {
+  color-scheme: light dark;
+  --bg: #ffffff;
+  --bg-alt: #f5f5f7;
+  --card: #ffffff;
+  --text: #1d1d1f;
+  --text-2: #5e5e63;
+  --line: #d2d2d7;
+  --link: #0066cc;
+  --btn: #0071e3;
+  --btn-hover: #0077ed;
+  --btn-text: #ffffff;
+  --code-bg: #1d1d1f;
+  --code-text: #f5f5f7;
+  --shot-shadow: 0 30px 60px -20px rgba(0,0,0,.35), 0 0 0 1px rgba(0,0,0,.06);
+  --focus: #0071e3;
+  --nav-bg: rgba(255,255,255,.78);
+  --green: #1d7a35; --blue: #0060c0; --orange: #b33000; --purple: #7d3c9e;
+  --pink: #c00d3f; --teal: #00668f; --red: #c4000f; --indigo: #3634a3;
+  --font: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", sans-serif;
+  --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #000000;
+    --bg-alt: #161617;
+    --card: #1d1d1f;
+    --text: #f5f5f7;
+    --text-2: #a1a1a6;
+    --line: #424245;
+    --link: #2997ff;
+    --code-bg: #1d1d1f;
+    --shot-shadow: 0 30px 60px -20px rgba(0,0,0,.8), 0 0 0 1px rgba(255,255,255,.12);
+    --focus: #2997ff;
+    --nav-bg: rgba(22,22,23,.78);
+    --green: #30d158; --blue: #409cff; --orange: #ff9f0a; --purple: #da8fff;
+    --pink: #ff6482; --teal: #5de6ff; --red: #ff6961; --indigo: #a5a3ff;
+  }
+}
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; scroll-padding-top: 64px; }
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+body {
+  margin: 0;
+  font-family: var(--font);
+  font-size: 17px;
+  line-height: 1.47;
+  letter-spacing: -0.022em;
+  color: var(--text);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+}
+img { max-width: 100%; height: auto; display: block; }
+a { color: var(--link); text-decoration: none; }
+a:hover { text-decoration: underline; }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; border-radius: 6px; }
+h1, h2, h3 { margin: 0; font-weight: 600; letter-spacing: -0.015em; }
+p { margin: 0; }
+code, kbd { font-family: var(--mono); font-size: .92em; }
+kbd { font-family: var(--font); }
+
+.skip { position: absolute; left: 12px; top: -60px; z-index: 100; background: var(--btn); color: #fff; padding: 10px 16px; border-radius: 10px; }
+.skip:focus { top: 12px; }
+.visually-hidden { position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+.wrap { width: 100%; max-width: 1080px; margin: 0 auto; padding: 0 24px; }
+
+/* Navigation */
+.site-header {
+  position: sticky; top: 0; z-index: 50;
+  background: var(--nav-bg);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  backdrop-filter: saturate(180%) blur(20px);
+  border-bottom: 1px solid color-mix(in srgb, var(--line) 60%, transparent);
+}
+.site-header .wrap { display: flex; align-items: center; justify-content: space-between; height: 52px; gap: 16px; }
+.brand { display: flex; align-items: center; gap: 8px; color: var(--text); font-weight: 600; font-size: 17px; }
+.brand:hover { text-decoration: none; }
+.brand img { width: 26px; height: 26px; }
+.site-header ul { display: flex; gap: 22px; list-style: none; margin: 0; padding: 0; font-size: 14px; }
+.site-header ul a { color: var(--text); opacity: .85; }
+.site-header ul a:hover { opacity: 1; text-decoration: none; }
+.site-header .nav-cta a { color: var(--link); opacity: 1; }
+
+/* Hero */
+.hero { text-align: center; padding: 72px 0 40px; }
+.hero-icon { width: 128px; height: 128px; margin: 0 auto 20px; }
+.hero h1 { display: flex; flex-direction: column; gap: 6px; }
+.hero .name { font-size: 28px; font-weight: 600; color: var(--text-2); letter-spacing: -0.01em; }
+.hero .headline { font-size: clamp(40px, 7vw, 76px); line-height: 1.05; font-weight: 700; letter-spacing: -0.03em; }
+.hero .sub { font-size: clamp(19px, 2.4vw, 24px); line-height: 1.35; color: var(--text-2); max-width: 760px; margin: 22px auto 0; letter-spacing: -0.01em; }
+.actions { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 14px 28px; margin-top: 32px; }
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--btn); color: var(--btn-text);
+  font-size: 17px; font-weight: 500; padding: 13px 26px; border-radius: 980px;
+  min-height: 48px;
+}
+.btn:hover { background: var(--btn-hover); text-decoration: none; }
+.btn svg { width: 18px; height: 18px; fill: currentColor; }
+.link-arrow::after { content: " ›"; }
+.meta { margin-top: 16px; font-size: 14px; color: var(--text-2); }
+.brew { max-width: 940px; margin: 36px auto 0; text-align: left; }
+.brew-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 14px; color: var(--text-2); }
+.copy {
+  font: inherit; font-size: 13px; color: var(--link); background: transparent;
+  border: 1px solid var(--line); border-radius: 980px; padding: 4px 12px; cursor: pointer; min-height: 30px;
+}
+.copy:hover { border-color: var(--link); }
+pre {
+  margin: 0; padding: 18px 20px; border-radius: 14px; overflow-x: auto;
+  background: var(--code-bg); color: var(--code-text);
+  font-family: var(--mono); font-size: 14px; line-height: 1.6; letter-spacing: 0;
+}
+@media (prefers-color-scheme: dark) { pre { border: 1px solid #333336; } }
+pre code { font-size: inherit; }
+pre .prompt { color: #8e8e93; user-select: none; -webkit-user-select: none; }
+.hero-shot { margin: 56px auto 0; width: 400px; max-width: 100%; }
+
+.shot { border-radius: 22px; box-shadow: var(--shot-shadow); background: #1e1e1e; }
+.shot-wide { border-radius: 16px; }
+
+/* Highlights */
+.highlights { padding: 40px 0 88px; }
+.highlights ul { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+.highlights li { background: var(--bg-alt); border-radius: 20px; padding: 26px 24px; }
+.highlights h2 { font-size: 21px; margin-bottom: 6px; }
+.highlights p { font-size: 15px; color: var(--text-2); }
+
+/* Feature sections */
+.section { padding: 96px 0; }
+.alt { background: var(--bg-alt); }
+.section-intro { text-align: center; max-width: 760px; margin: 0 auto 56px; }
+.section-title { font-size: clamp(32px, 5vw, 56px); line-height: 1.07; font-weight: 700; letter-spacing: -0.028em; }
+.section-lede { font-size: clamp(19px, 2.2vw, 21px); color: var(--text-2); margin-top: 16px; }
+.feature { display: grid; grid-template-columns: 1fr 400px; gap: 72px; align-items: center; }
+.feature.flip { grid-template-columns: 400px 1fr; }
+.feature.flip .feature-text { order: 2; }
+.feature.wide { grid-template-columns: 1fr 1.3fr; }
+.eyebrow { font-size: 19px; font-weight: 700; margin-bottom: 10px; letter-spacing: -0.01em; }
+.feature h2 { font-size: clamp(30px, 4.2vw, 48px); line-height: 1.08; font-weight: 700; letter-spacing: -0.026em; }
+.feature .lede { font-size: 19px; color: var(--text-2); margin-top: 18px; line-height: 1.45; }
+.feature ul { margin: 24px 0 0; padding: 0; list-style: none; }
+.feature li { position: relative; padding: 10px 0 10px 28px; border-top: 1px solid var(--line); font-size: 17px; }
+.feature li:last-child { border-bottom: 1px solid var(--line); }
+.feature li::before { content: ""; position: absolute; left: 4px; top: 19px; width: 8px; height: 8px; border-radius: 50%; background: currentColor; opacity: .35; }
+.c-green { color: var(--green); } .c-blue { color: var(--blue); } .c-orange { color: var(--orange); }
+.c-purple { color: var(--purple); } .c-pink { color: var(--pink); } .c-teal { color: var(--teal); }
+.c-red { color: var(--red); } .c-indigo { color: var(--indigo); }
+
+.gallery { display: grid; grid-template-columns: repeat(2, 1fr); gap: 32px; margin-top: 72px; }
+.gallery figure { margin: 0; }
+.gallery figcaption { margin-top: 14px; font-size: 15px; color: var(--text-2); }
+.gallery figcaption strong { color: var(--text); font-weight: 600; }
+
+.duo { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+.card { background: var(--card); border-radius: 28px; padding: 44px 40px 0; overflow: hidden; display: flex; flex-direction: column; }
+.card h2 { font-size: clamp(26px, 3.2vw, 34px); line-height: 1.12; font-weight: 700; letter-spacing: -0.022em; }
+.card p:not(.eyebrow) { color: var(--text-2); margin-top: 12px; }
+.card img { width: 320px; margin: 36px auto -60px; }
+.card-shot { margin-top: auto; }
+
+/* Replaces table */
+.table-wrap { overflow-x: auto; border-radius: 20px; background: var(--card); border: 1px solid var(--line); }
+table { width: 100%; border-collapse: collapse; font-size: 16px; }
+caption { text-align: left; }
+th, td { text-align: left; padding: 15px 22px; vertical-align: top; }
+thead th { font-size: 13px; text-transform: uppercase; letter-spacing: .04em; color: var(--text-2); font-weight: 600; border-bottom: 1px solid var(--line); }
+tbody tr + tr th, tbody tr + tr td { border-top: 1px solid var(--line); }
+tbody th { font-weight: 400; color: var(--text-2); }
+tbody th strong { color: var(--text); font-weight: 600; display: block; }
+.note { text-align: center; font-size: 15px; color: var(--text-2); margin-top: 20px; }
+
+/* Install */
+.steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; counter-reset: step; }
+.steps > li { background: var(--bg-alt); border-radius: 24px; padding: 34px 30px; counter-increment: step; min-width: 0; }
+.steps > li::before {
+  content: counter(step); display: inline-flex; align-items: center; justify-content: center;
+  width: 36px; height: 36px; border-radius: 50%; background: var(--btn); color: #fff; font-weight: 600; margin-bottom: 18px;
+}
+.steps h3 { font-size: 22px; margin-bottom: 10px; letter-spacing: -0.016em; }
+.steps p { color: var(--text-2); font-size: 16px; }
+.steps p + p { margin-top: 10px; }
+.steps pre { margin-top: 14px; font-size: 12.5px; padding: 14px 16px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.path { color: var(--text); font-weight: 500; }
+.install-foot { text-align: center; margin-top: 32px; color: var(--text-2); }
+
+/* FAQ */
+.faq { max-width: 820px; margin: 0 auto; }
+.faq-item { padding: 26px 0; border-top: 1px solid var(--line); }
+.faq-item:last-child { border-bottom: 1px solid var(--line); }
+.faq h3 { font-size: 21px; letter-spacing: -0.016em; margin-bottom: 8px; }
+.faq p { color: var(--text-2); }
+
+/* Final call to action */
+.cta { text-align: center; padding: 110px 0; }
+.cta img { width: 96px; height: 96px; margin: 0 auto 22px; }
+.cta .actions { margin-top: 28px; }
+
+/* Footer */
+.site-footer { background: var(--bg-alt); color: var(--text-2); font-size: 13px; padding: 32px 0 44px; border-top: 1px solid var(--line); }
+.site-footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px 32px; }
+.site-footer ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px 22px; }
+.site-footer a { color: var(--text); }
+.site-footer small { font-size: 13px; }
+
+@media (max-width: 960px) {
+  .highlights ul { grid-template-columns: repeat(2, 1fr); }
+  .feature, .feature.flip, .feature.wide { grid-template-columns: 1fr; gap: 48px; }
+  .feature.flip .feature-text { order: 0; }
+  .feature-media { justify-self: center; width: 100%; max-width: 400px; }
+  .feature.wide .feature-media { max-width: 640px; }
+  .steps { grid-template-columns: minmax(0, 1fr); max-width: 640px; margin: 0 auto; }
+}
+@media (max-width: 734px) {
+  body { font-size: 16px; }
+  .wrap { padding: 0 20px; }
+  .site-header .hide-sm { display: none; }
+  .site-header ul { gap: 18px; }
+  .hero { padding-top: 48px; }
+  .hero-icon { width: 104px; height: 104px; }
+  pre { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 13px; }
+  .hero .name { font-size: 22px; }
+  .highlights { padding-bottom: 64px; }
+  .highlights ul { grid-template-columns: 1fr; gap: 12px; }
+  .section { padding: 72px 0; }
+  .section-intro { margin-bottom: 40px; }
+  .gallery { grid-template-columns: 1fr; gap: 28px; margin-top: 48px; }
+  .duo { grid-template-columns: 1fr; }
+  .card { padding: 34px 26px 0; }
+  .card img { width: 260px; }
+  th, td { padding: 12px 14px; }
+  table { font-size: 15px; }
+  .cta { padding: 80px 0; }
+}
+@media (forced-colors: active) {
+  .btn, .copy { border: 2px solid ButtonText; }
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <nav class="wrap" aria-label="Main">
+    <a class="brand" href="#top" aria-label="MacMate, back to top">
+      <img src="icon.png" width="26" height="26" alt="">
+      <span>MacMate</span>
+    </a>
+    <ul>
+      <li class="hide-sm"><a href="#features">Features</a></li>
+      <li><a href="#install">Install</a></li>
+      <li><a href="#faq">FAQ</a></li>
+      <li class="nav-cta"><a href="https://github.com/PriyanshuGeTRekT/macos-all-in-one-tool">GitHub</a></li>
+    </ul>
+  </nav>
+</header>
+
+<main id="main">
+
+  <section class="hero" id="top" aria-labelledby="hero-title">
+    <div class="wrap">
+      <img class="hero-icon" src="icon.png" width="128" height="128" alt="MacMate app icon: a white lightning bolt on a blue rounded square">
+      <h1 id="hero-title">
+        <span class="name">MacMate</span>
+        <span class="headline">Everything your menu&nbsp;bar is missing.</span>
+      </h1>
+      <p class="sub">Battery percentage and the apps draining it, window tiling, an <kbd>⌥Tab</kbd> window switcher, mouse fixes, per-app volume, keep awake and a deep uninstaller. One free, open-source, native Mac app instead of a dozen.</p>
+      <div class="actions">
+        <a class="btn" href="https://github.com/PriyanshuGeTRekT/macos-all-in-one-tool/releases/latest/download/MacMate.zip">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M11 3h2v10.17l3.59-3.58L18 11l-6 6-6-6 1.41-1.41L11 13.17V3zM5 19h14v2H5z"/></svg>
+          Download for Mac
+        </a>
+        <a class="link-arrow" href="https://github.com/PriyanshuGeTRekT/macos-all-in-one-tool">View the source on GitHub</a>
+      </div>
+      <p class="meta">Free · Version 1.1.0 · macOS 26 or later · Apple silicon</p>
+
+      <div class="brew">
+        <div class="brew-head">
+          <span id="brew-label">Or install with Homebrew</span>
+          <button class="copy" type="button" data-copy="brew-cmd" hidden>Copy</button>
+        </div>
+        <pre tabindex="0" aria-labelledby="brew-label"><code id="brew-cmd">brew tap priyanshugetrekt/macmate https://github.com/PriyanshuGeTRekT/macos-all-in-one-tool
+brew install --cask priyanshugetrekt/macmate/macmate</code></pre>
+        <p class="visually-hidden" role="status" aria-live="polite" id="copy-status"></p>
+      </div>
+
+      <img class="hero-shot shot" src="demo.gif" width="400" height="620" fetchpriority="high" alt="Animated demo of the MacMate panel dropping down from the menu bar and switching between Battery, Activity, Windows and Tools.">
+    </div>
+  </section>
+
+  <section class="highlights" aria-label="Highlights">
+    <div class="wrap">
+      <ul>
+        <li><h2>Native</h2><p>Written in Swift with SwiftUI and AppKit. No Electron, no web views, no background helpers.</p></li>
+        <li><h2>Light</h2><p>About 0% CPU and 14&nbsp;MB of memory while idle, measured on a MacBook Pro.</p></li>
+        <li><h2>Private</h2><p>No accounts, no analytics. The only network request is the check for updates.</p></li>
+        <li><h2>Free</h2><p>Open source under the MIT License. No trial, no subscription, no upsell.</p></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- Battery -->
+  <section class="section alt" id="features" aria-labelledby="battery-title">
+    <div class="wrap feature">
+      <div class="feature-text">
+        <p class="eyebrow c-green">Battery</p>
+        <h2 id="battery-title">See exactly which app is draining your battery.</h2>
+        <p class="lede">The battery percentage lives in your menu bar. One click shows every app’s energy use in real watts, read from the chip’s own per-process counters, not a vague “energy impact” score.</p>
+        <ul>
+          <li>Percent per hour each app costs, and the minutes of battery you get back by quitting it.</li>
+          <li>Battery history: 24-hour and 7-day charts of charge and of the apps that used the most energy.</li>
+          <li>An alert when an app suddenly starts using a lot of energy.</li>
+          <li>Battery levels of AirPods, mice and keyboards connected over Bluetooth.</li>
+          <li>Health, cycle count, adapter wattage and an optional unplug-at-80% reminder.</li>
+        </ul>
+      </div>
+      <div class="feature-media">
+        <img class="shot" src="screenshots/battery.png" width="400" height="620" loading="lazy" decoding="async" alt="MacMate Battery tab: 60% charge, 24 watts of system power, and apps ranked by energy use in watts, led by Safari at 2.41 W.">
+      </div>
+    </div>
+  </section>
+
+  <!-- Windows -->
+  <section class="section" aria-labelledby="windows-title">
+    <div class="wrap feature flip">
+      <div class="feature-text">
+        <p class="eyebrow c-blue">Windows</p>
+        <h2 id="windows-title">A window manager and Alt-Tab, built in.</h2>
+        <p class="lede">Snap windows into place the way Windows does, with a shortcut or by dragging them to an edge. Switch between individual windows, not just apps.</p>
+        <ul>
+          <li>15 layouts: halves, quarters, thirds, two-thirds, maximize and center.</li>
+          <li>Drag a window to a screen edge or corner to snap it, with a live preview.</li>
+          <li><kbd>⌥Tab</kbd> switcher with a thumbnail of every window.</li>
+          <li>Window previews when you hover over an icon in the Dock.</li>
+          <li>Restore the previous size, move to the next display, optional gaps.</li>
+        </ul>
+      </div>
+      <div class="feature-media">
+        <img class="shot" src="screenshots/windows.png" width="400" height="620" loading="lazy" decoding="async" alt="MacMate Windows tab with a grid of tiling layouts for halves, quarters and thirds, and their keyboard shortcuts.">
+      </div>
+    </div>
+  </section>
+
+  <!-- Input -->
+  <section class="section alt" aria-labelledby="input-title">
+    <div class="wrap feature">
+      <div class="feature-text">
+        <p class="eyebrow c-purple">Mouse &amp; keyboard</p>
+        <h2 id="input-title">Your mouse and keyboard, the way you like them.</h2>
+        <p class="lede">Reverse the scroll wheel of a third-party mouse while the trackpad keeps natural scrolling. Turn Caps Lock into something useful.</p>
+        <ul>
+          <li>Reverse scrolling for the mouse only, smooth scrolling and adjustable speed.</li>
+          <li>Remap the middle, back and forward buttons to Mission Control, Spaces, Copy, Paste and more.</li>
+          <li>Caps Lock as a Hyper key, plus key remapping.</li>
+          <li>Custom keyboard shortcuts for MacMate’s actions.</li>
+          <li>The trackpad and Magic Mouse are never touched.</li>
+        </ul>
+      </div>
+      <div class="feature-media">
+        <img class="shot" src="screenshots/input.png" width="400" height="620" loading="lazy" decoding="async" alt="MacMate mouse and keyboard settings: reverse wheel direction, smooth scrolling, button remapping and Caps Lock as a Hyper key.">
+      </div>
+    </div>
+  </section>
+
+  <!-- Sound and displays -->
+  <section class="section" aria-labelledby="sound-title">
+    <div class="wrap feature flip">
+      <div class="feature-text">
+        <p class="eyebrow c-pink">Sound &amp; displays</p>
+        <h2 id="sound-title">A volume for every app. Brightness for every screen.</h2>
+        <p class="lede">Turn down a noisy browser tab without touching your music, and switch speakers or headphones in one click.</p>
+        <ul>
+          <li>Per-app volume for every app that plays audio.</li>
+          <li>Output-device switching right from the menu bar.</li>
+          <li>Hardware brightness for external monitors over DDC.</li>
+          <li>Brightness keys that work on external monitors too.</li>
+        </ul>
+      </div>
+      <div class="feature-media">
+        <img class="shot" src="screenshots/sound.png" width="400" height="620" loading="lazy" decoding="async" alt="MacMate Sound tab with a volume slider for each app and a list of output devices.">
+      </div>
+    </div>
+  </section>
+
+  <!-- Calendar -->
+  <section class="section alt" aria-labelledby="calendar-title">
+    <div class="wrap feature">
+      <div class="feature-text">
+        <p class="eyebrow c-red">Calendar</p>
+        <h2 id="calendar-title">Never be late for the next meeting.</h2>
+        <p class="lede">See what is next at a glance and join video calls with one click.</p>
+        <ul>
+          <li>Your next meeting at the top of the Calendar tab.</li>
+          <li>Join buttons for video calls.</li>
+          <li>An optional countdown to the next meeting in the menu bar.</li>
+        </ul>
+      </div>
+      <div class="feature-media">
+        <img class="shot" src="screenshots/calendar.png" width="400" height="620" loading="lazy" decoding="async" alt="MacMate Calendar tab showing the next meeting with a Join button and the rest of today’s events.">
+      </div>
+    </div>
+  </section>
+
+  <!-- Activity -->
+  <section class="section" aria-labelledby="monitor-title">
+    <div class="wrap feature flip">
+      <div class="feature-text">
+        <p class="eyebrow c-teal">Activity</p>
+        <h2 id="monitor-title">Your whole Mac, at a glance.</h2>
+        <p class="lede">A live system monitor in the menu bar, without opening Activity Monitor.</p>
+        <ul>
+          <li>CPU history and per-core bars for efficiency and performance cores.</li>
+          <li>Memory pressure, swap, network speed, GPU, storage and thermal state.</li>
+          <li>Top processes by CPU or memory, with right-click to quit.</li>
+        </ul>
+      </div>
+      <div class="feature-media">
+        <img class="shot" src="screenshots/monitor.png" width="400" height="620" loading="lazy" decoding="async" alt="MacMate Activity tab with CPU, memory, network and GPU graphs and a list of top processes.">
+      </div>
+    </div>
+  </section>
+
+  <!-- Keep awake and clipboard -->
+  <section class="section alt" aria-label="Keep awake and clipboard history">
+    <div class="wrap duo">
+      <article class="card" aria-labelledby="awake-title">
+        <p class="eyebrow c-orange">Keep Awake</p>
+        <h2 id="awake-title">Keep your Mac awake. For as long as you need.</h2>
+        <p>From 15 minutes to 8 hours, a custom time or until you turn it off. Keep the display on or just the system, and stop automatically when the battery runs low.</p>
+        <img class="shot card-shot" src="screenshots/awake.png" width="320" height="496" loading="lazy" decoding="async" alt="MacMate Keep Awake tab with presets from 15 minutes to 8 hours and an Until I Turn It Off button.">
+      </article>
+      <article class="card" aria-labelledby="clipboard-title">
+        <p class="eyebrow c-indigo">Clipboard</p>
+        <h2 id="clipboard-title">Everything you copied, one shortcut away.</h2>
+        <p>The last 100 text items with search and pinning. Press <kbd>⌃⌥V</kbd> anywhere and click to paste. Kept in memory only, and passwords are never recorded.</p>
+        <img class="shot card-shot" src="screenshots/clipboard.png" width="320" height="496" loading="lazy" decoding="async" alt="MacMate clipboard history with a search field and a list of recently copied text.">
+      </article>
+    </div>
+  </section>
+
+  <!-- Cleanup -->
+  <section class="section" aria-labelledby="cleanup-title">
+    <div class="wrap">
+      <div class="feature wide">
+        <div class="feature-text">
+          <p class="eyebrow c-blue">Cleanup</p>
+          <h2 id="cleanup-title">Uninstall Mac apps completely.</h2>
+          <p class="lede">Dragging an app to the Trash leaves its caches, preferences and support files behind. MacMate finds them all, shows you every file, and moves only what you tick to the Trash.</p>
+          <ul>
+            <li>Leftovers of apps you have already deleted.</li>
+            <li>A finder for large and old files.</li>
+            <li>A manager for startup items and launch agents.</li>
+            <li>A junk cleaner for caches, logs and developer files.</li>
+            <li>Everything goes to the Trash, never deleted outright.</li>
+          </ul>
+        </div>
+        <div class="feature-media">
+          <img class="shot shot-wide" src="screenshots/uninstall.png" width="640" height="600" loading="lazy" decoding="async" alt="MacMate uninstaller listing Google Chrome’s leftover files in Application Support, Caches and Preferences, 5.58 GB selected, with a Move to Trash button.">
+        </div>
+      </div>
+      <div class="gallery">
+        <figure>
+          <img class="shot shot-wide" src="screenshots/leftovers.png" width="640" height="600" loading="lazy" decoding="async" alt="MacMate list of leftover files from apps that are no longer installed, with their sizes.">
+          <figcaption><strong>Leftovers.</strong> Files left behind by apps you deleted long ago.</figcaption>
+        </figure>
+        <figure>
+          <img class="shot shot-wide" src="screenshots/largefiles.png" width="640" height="600" loading="lazy" decoding="async" alt="MacMate large and old file finder listing big files with their size and when they were last opened.">
+          <figcaption><strong>Large &amp; old files.</strong> Find what is really filling your disk.</figcaption>
+        </figure>
+        <figure>
+          <img class="shot shot-wide" src="screenshots/startup.png" width="640" height="600" loading="lazy" decoding="async" alt="MacMate startup items manager listing login items and launch agents with switches to turn them off.">
+          <figcaption><strong>Startup items.</strong> See and switch off what starts with your Mac.</figcaption>
+        </figure>
+        <figure>
+          <img class="shot shot-wide" src="screenshots/junk.png" width="640" height="600" loading="lazy" decoding="async" alt="MacMate junk cleaner listing app caches, logs, crash reports and developer caches with their sizes.">
+          <figcaption><strong>Junk.</strong> Caches, logs and developer junk. Apple’s own caches are left alone.</figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- Tools -->
+  <section class="section alt" aria-labelledby="tools-title">
+    <div class="wrap feature">
+      <div class="feature-text">
+        <p class="eyebrow c-orange">Tools</p>
+        <h2 id="tools-title">The little things macOS forgot.</h2>
+        <p class="lede">Small helpers you would otherwise install one app at a time.</p>
+        <ul>
+          <li>Copy text from anywhere on screen, even from images, videos and PDFs.</li>
+          <li>Color picker that copies the hex value of any pixel.</li>
+          <li>Global microphone mute with a hotkey.</li>
+          <li>Hold <kbd>⌘Q</kbd> to quit, and cut and paste files in Finder.</li>
+          <li>Keyboard cleaning lock, display dimming and quick system toggles.</li>
+        </ul>
+      </div>
+      <div class="feature-media">
+        <img class="shot" src="screenshots/tools.png" width="400" height="620" loading="lazy" decoding="async" alt="MacMate Tools tab with app uninstaller, junk cleaner, copy text, color picker and quick toggles.">
+      </div>
+    </div>
+  </section>
+
+  <!-- Privacy and settings -->
+  <section class="section" aria-labelledby="privacy-title">
+    <div class="wrap feature flip">
+      <div class="feature-text">
+        <p class="eyebrow c-green">Privacy</p>
+        <h2 id="privacy-title">Nothing leaves your Mac.</h2>
+        <p class="lede">No accounts, no analytics, no tracking. MacMate checks for updates and installs them for you, and that check is the only network request it ever makes.</p>
+        <ul>
+          <li>Clipboard history lives in memory and is gone when the app quits.</li>
+          <li>Cleaners can only touch app data in known folders, and use the Trash.</li>
+          <li>Choose what the menu bar shows: time left, watts, CPU or network speed.</li>
+          <li>The source is small and readable. Check it yourself.</li>
+        </ul>
+      </div>
+      <div class="feature-media">
+        <img class="shot" src="screenshots/settings.png" width="400" height="620" loading="lazy" decoding="async" alt="MacMate Settings tab with menu bar readouts, battery alerts, updates and Open at Login.">
+      </div>
+    </div>
+  </section>
+
+  <!-- Replaces -->
+  <section class="section alt" aria-labelledby="replaces-title">
+    <div class="wrap">
+      <div class="section-intro">
+        <h2 class="section-title" id="replaces-title">Replaces these apps.</h2>
+        <p class="section-lede">One menu bar icon instead of a dozen. MacMate warns you if a conflicting app is running at the same time.</p>
+      </div>
+      <div class="table-wrap" tabindex="0" role="region" aria-labelledby="replaces-title">
+        <table>
+          <caption class="visually-hidden">Apps that MacMate can replace and the part of MacMate that does the same job</caption>
+          <thead>
+            <tr><th scope="col">If you use…</th><th scope="col">MacMate has</th></tr>
+          </thead>
+          <tbody>
+            <tr><th scope="row"><strong>Battery and energy monitors</strong>coconutBattery, Stats, iStat Menus</th><td>Battery with energy by app and history, Activity</td></tr>
+            <tr><th scope="row"><strong>Bluetooth battery widgets</strong>AirBuddy</th><td>Bluetooth device batteries</td></tr>
+            <tr><th scope="row"><strong>Window managers</strong>Rectangle, Magnet</th><td>Window tiling and snapping</td></tr>
+            <tr><th scope="row"><strong>Window switchers and Dock previews</strong>AltTab, DockDoor</th><td><kbd>⌥Tab</kbd> switcher with thumbnails, Dock previews</td></tr>
+            <tr><th scope="row"><strong>Mouse utilities</strong>LinearMouse, Mac Mouse Fix, Mos, Scroll Reverser</th><td>Mouse settings</td></tr>
+            <tr><th scope="row"><strong>Keyboard tools</strong>Karabiner-Elements, Hyperkey</th><td>Hyper key, key remapping, custom shortcuts</td></tr>
+            <tr><th scope="row"><strong>Audio and brightness tools</strong>SoundSource, MonitorControl</th><td>Per-app volume, output switching, DDC brightness</td></tr>
+            <tr><th scope="row"><strong>Meeting reminders</strong>MeetingBar</th><td>Calendar with Join buttons and countdown</td></tr>
+            <tr><th scope="row"><strong>Keep-awake tools</strong>Amphetamine, Caffeine, <code>caffeinate</code></th><td>Keep Awake</td></tr>
+            <tr><th scope="row"><strong>Uninstallers and cleaners</strong>AppCleaner, CleanMyMac, DaisyDisk</th><td>Uninstaller, leftovers, large files, startup items, junk cleaner</td></tr>
+            <tr><th scope="row"><strong>Clipboard managers</strong>Maccy, Paste</th><td>Clipboard history</td></tr>
+            <tr><th scope="row"><strong>Text capture</strong>TextSniper</th><td>Tools › Copy Text</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="note">App names are trademarks of their owners. MacMate is not affiliated with them.</p>
+    </div>
+  </section>
+
+  <!-- Install -->
+  <section class="section" id="install" aria-labelledby="install-title">
+    <div class="wrap">
+      <div class="section-intro">
+        <h2 class="section-title" id="install-title">Up and running in a minute.</h2>
+        <p class="section-lede">Requires macOS 26 or later on a Mac with Apple silicon.</p>
+      </div>
+      <ol class="steps">
+        <li>
+          <h3>Download</h3>
+          <p><a href="https://github.com/PriyanshuGeTRekT/macos-all-in-one-tool/releases/latest/download/MacMate.zip">Download MacMate.zip</a>, unzip it and drag <span class="path">MacMate.app</span> into your Applications folder.</p>
+          <p>Or install it with Homebrew:</p>
+          <pre tabindex="0" aria-label="Homebrew install command"><code>brew install --cask priyanshugetrekt/macmate/macmate</code></pre>
+          <p>Run the <code>brew tap</code> command shown at the top of the page first.</p>
+        </li>
+        <li>
+          <h3>Open Anyway</h3>
+          <p>MacMate is not notarized by Apple, so macOS blocks the first launch. Open <span class="path">System Settings › Privacy &amp; Security</span>, scroll down and click <span class="path">Open Anyway</span> next to MacMate.</p>
+          <p>You only need to do this once.</p>
+        </li>
+        <li>
+          <h3>Allow Accessibility</h3>
+          <p>Window tiling, <kbd>⌥Tab</kbd>, mouse and keyboard features need Accessibility access. Click <span class="path">Open Privacy &amp; Security Settings</span> in MacMate and switch it on.</p>
+          <p>Battery, Activity, Keep Awake, Clipboard and the cleaners work without any permission.</p>
+        </li>
+      </ol>
+      <p class="install-foot">Prefer to build it yourself? <a href="https://github.com/PriyanshuGeTRekT/macos-all-in-one-tool#installation">Build from source</a> with just the Command Line Tools.</p>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="section alt" id="faq" aria-labelledby="faq-title">
+    <div class="wrap">
+      <div class="section-intro">
+        <h2 class="section-title" id="faq-title">Questions and answers.</h2>
+      </div>
+      <div class="faq">
+        <div class="faq-item">
+          <h3>How do I show battery percentage in the Mac menu bar?</h3>
+          <p>Install MacMate. The percentage is always visible in the menu bar, and in Settings you can add time remaining, system watts, CPU load or download speed next to it.</p>
+        </div>
+        <div class="faq-item">
+          <h3>How can I see which app is draining my MacBook battery?</h3>
+          <p>Open MacMate’s Battery tab. Apps are ranked by real power draw in watts, with the percent per hour each one costs. Battery history shows the last 24 hours or 7 days, and MacMate can alert you when an app suddenly starts using a lot of energy.</p>
+        </div>
+        <div class="faq-item">
+          <h3>Is there a free window manager for Mac like Windows snap?</h3>
+          <p>Yes. MacMate snaps windows to halves, quarters and thirds with keyboard shortcuts or by dragging them to a screen edge, and its ⌥Tab switcher shows a thumbnail of every window, like Alt-Tab on Windows.</p>
+        </div>
+        <div class="faq-item">
+          <h3>How do I reverse mouse scrolling on Mac without changing the trackpad?</h3>
+          <p>Turn on “Reverse wheel direction” in MacMate’s mouse settings. It affects ordinary mice only, so the trackpad keeps natural scrolling.</p>
+        </div>
+        <div class="faq-item">
+          <h3>Can I set a different volume for each app on Mac?</h3>
+          <p>Yes. MacMate’s Sound tab has a volume slider for each app that plays audio, and switches the output device in one click.</p>
+        </div>
+        <div class="faq-item">
+          <h3>How do I keep my Mac from sleeping?</h3>
+          <p>Open Keep Awake and pick a duration, or choose “Until I Turn It Off”. You decide whether the display stays on too.</p>
+        </div>
+        <div class="faq-item">
+          <h3>How do I completely uninstall an app on Mac, including leftover files?</h3>
+          <p>Open Tools › Uninstall Apps, pick the app, review the files MacMate found and click Move to Trash. It can also find leftovers of apps you have already deleted.</p>
+        </div>
+        <div class="faq-item">
+          <h3>Why does macOS say MacMate cannot be opened?</h3>
+          <p>MacMate is not notarized by Apple, so macOS blocks the first launch. Open System Settings › Privacy &amp; Security, scroll down and click Open Anyway next to MacMate. You only need to do this once.</p>
+        </div>
+        <div class="faq-item">
+          <h3>Does MacMate work on Intel Macs?</h3>
+          <p>No. It needs a Mac with Apple silicon and macOS 26 or later.</p>
+        </div>
+        <div class="faq-item">
+          <h3>Is MacMate free and safe?</h3>
+          <p>Yes. MacMate is free and open source under the MIT License. It has no accounts or analytics, its only network request is the check for updates, and its cleaners move files to the Trash instead of deleting them.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Final call to action -->
+  <section class="cta" aria-labelledby="cta-title">
+    <div class="wrap">
+      <img src="icon.png" width="96" height="96" loading="lazy" decoding="async" alt="">
+      <h2 class="section-title" id="cta-title">Get MacMate. It’s free.</h2>
+      <p class="section-lede">Version 1.1.0 · macOS 26 or later · Apple silicon</p>
+      <div class="actions">
+        <a class="btn" href="https://github.com/PriyanshuGeTRekT/macos-all-in-one-tool/releases/latest/download/MacMate.zip">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M11 3h2v10.17l3.59-3.58L18 11l-6 6-6-6 1.41-1.41L11 13.17V3zM5 19h14v2H5z"/></svg>
+          Download for Mac
+        </a>
+        <a class="link-arrow" href="https://github.com/PriyanshuGeTRekT/macos-all-in-one-tool/releases">Release notes</a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <small>© 2026 <a href="https://github.com/PriyanshuGeTRekT">Priyanshu Yadav</a>. Released under the <a href="https://github.com/PriyanshuGeTRekT/macos-all-in-one-tool/blob/main/LICENSE">MIT License</a>.</small>
+    <nav aria-label="Footer">
+      <ul>
+        <li><a href="https://github.com/PriyanshuGeTRekT/macos-all-in-one-tool">GitHub</a></li>
+        <li><a href="https://github.com/PriyanshuGeTRekT/macos-all-in-one-tool/releases">Releases</a></li>
+        <li><a href="https://github.com/PriyanshuGeTRekT/macos-all-in-one-tool/issues">Report a bug</a></li>
+        <li><a href="https://github.com/PriyanshuGeTRekT/macos-all-in-one-tool/blob/main/CONTRIBUTING.md">Contribute</a></li>
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+<script>
+document.querySelectorAll('[data-copy]').forEach(function (button) {
+  var source = document.getElementById(button.getAttribute('data-copy'));
+  var status = document.getElementById('copy-status');
+  if (!source || !navigator.clipboard) return;
+  button.hidden = false;
+  button.addEventListener('click', function () {
+    navigator.clipboard.writeText(source.textContent).then(function () {
+      button.textContent = 'Copied';
+      if (status) status.textContent = 'Homebrew commands copied to the clipboard.';
+      setTimeout(function () { button.textContent = 'Copy'; }, 2000);
+    });
+  });
+});
+</script>
+</body>
+</html>

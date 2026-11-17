@@ -44,7 +44,8 @@ struct ClipboardTab: View {
                         .disabled(clipboard.items.isEmpty)
                 }
             } footer: {
-                Text("Press ⌃⌥V anywhere to open this list. Right-click an item to pin it.")
+                Text((ShortcutStore.shared.combo(for: Shortcuts.clipboard).map { "Press \($0.displayString) anywhere to open this list. " } ?? "")
+                    + "Right-click an item to pin it.")
             }
             Section {
                 Toggle("Keep clipboard history", isOn: $enabled)
@@ -95,8 +96,7 @@ struct ToolsTab: View {
     @ObservedObject private var mic = MicMute.shared
     @ObservedObject private var keyboard = KeyboardFeatures.shared
     @ObservedObject private var dimmer = DisplayDimmer.shared
-    @AppStorage(Keys.cmdQGuard) private var cmdQGuard = false
-    @AppStorage(Keys.finderCut) private var finderCut = false
+    @ObservedObject private var shortcuts = ShortcutStore.shared
     @ViewState private var hiddenFiles = SystemToggles.hiddenFilesShown
     @ViewState private var desktopHidden = SystemToggles.desktopIconsHidden
     @ViewState private var darkMode = SystemToggles.darkMode
@@ -110,17 +110,26 @@ struct ToolsTab: View {
                 Button { open(.junk) } label: {
                     ToolLink(title: "Clean Up Junk", detail: "Caches, logs and developer leftovers", symbol: "sparkles")
                 }
+                Button { open(.startup) } label: {
+                    ToolLink(title: "Startup Items", detail: "Launch agents and background helpers", symbol: "power")
+                }
+                Button { open(.leftovers) } label: {
+                    ToolLink(title: "Leftovers", detail: "Files left behind by deleted apps", symbol: "shippingbox")
+                }
+                Button { open(.largeFiles) } label: {
+                    ToolLink(title: "Large & Old Files", detail: "Big files you may not need", symbol: "doc.badge.clock")
+                }
             }
             .buttonStyle(.plain)
 
             Section("Quick Actions") {
                 LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 4), spacing: 8) {
                     ActionTile(title: "Copy Text", symbol: "text.viewfinder") { MenuBarPanel.close(); ScreenOCR.capture() }
-                        .help("Drag over any part of the screen to copy the text in it  ⌃⌥O")
+                        .help("Drag over any part of the screen to copy the text in it" + shortcutHint(Shortcuts.ocr))
                     ActionTile(title: "Pick Color", symbol: "eyedropper") { MenuBarPanel.close(); SystemToggles.pickColor() }
-                        .help("Copy the hex value of any pixel  ⌃⌥P")
+                        .help("Copy the hex value of any pixel" + shortcutHint(Shortcuts.color))
                     ActionTile(title: mic.muted ? "Unmute" : "Mute Mic", symbol: mic.muted ? "mic.slash.fill" : "mic.fill", active: mic.muted) { mic.toggle() }
-                        .help("Mute the microphone everywhere  ⌃⌥A")
+                        .help("Mute the microphone everywhere" + shortcutHint(Shortcuts.mic))
                     ActionTile(title: "Lock Keys", symbol: "keyboard") { MenuBarPanel.close(); keyboard.lockKeyboard() }
                         .help("Ignore the keyboard while you clean it")
                     ActionTile(title: "Sleep Display", symbol: "moon.fill") { MenuBarPanel.close(); inBackground { SystemToggles.sleepDisplay() } }
@@ -145,37 +154,16 @@ struct ToolsTab: View {
                     .onChange(of: darkMode) { _, on in inBackground { _ = SystemToggles.setDarkMode(on) } }
             }
 
-            Section {
-                Toggle("Hold ⌘Q to quit", isOn: $cmdQGuard)
-                Toggle("Cut and paste files in Finder with ⌘X and ⌘V", isOn: $finderCut)
-            } header: {
-                Text("Keyboard")
-            } footer: {
-                Text("Holding ⌘Q for a moment protects you from quitting an app by accident. Both options need Accessibility access.")
-            }
-
-            Section {
-                ForEach(dimmer.displays) { display in
-                    LabeledContent(display.name) {
-                        Slider(value: Binding(get: { dimmer.level(for: display.id) }, set: { dimmer.set($0, for: display.id) }), in: 0.2...1) {
-                            EmptyView()
-                        } minimumValueLabel: {
-                            Image(systemName: "sun.min").foregroundStyle(.secondary)
-                        } maximumValueLabel: {
-                            Image(systemName: "sun.max").foregroundStyle(.secondary)
-                        }
-                    }
-                }
-            } header: {
-                Text("Display Dimming")
-            } footer: {
-                Text("Dims in software, so it works on external monitors whose brightness macOS cannot change.")
-            }
+            DisplaysSection()
         }
         .onAppear {
             mic.refresh()
             dimmer.refreshDisplays()
         }
+    }
+
+    private func shortcutHint(_ def: ShortcutDefinition) -> String {
+        shortcuts.combo(for: def).map { "  \($0.displayString)" } ?? ""
     }
 
     private func open(_ mode: CleanupMode) {
@@ -247,6 +235,7 @@ struct SettingsTab: View {
     @AppStorage(Keys.alertLowLevel) private var alertLowLevel = 20
     @AppStorage(Keys.alertHigh) private var alertHigh = false
     @AppStorage(Keys.alertHighLevel) private var alertHighLevel = 80
+    @AppStorage(Keys.alertEnergy) private var alertEnergy = true
     @ViewState private var launchAtLogin = LoginItem.enabled
 
     var body: some View {
@@ -262,6 +251,16 @@ struct SettingsTab: View {
                 if alertLow { Stepper("At \(alertLowLevel)%", value: $alertLowLevel, in: 5...50, step: 5) }
                 Toggle("Remind me to unplug when charged", isOn: $alertHigh)
                 if alertHigh { Stepper("At \(alertHighLevel)%", value: $alertHighLevel, in: 50...100, step: 5) }
+                Toggle("Alert when an app uses a lot of energy", isOn: $alertEnergy)
+            }
+            Section {
+                ForEach(Shortcuts.tools) { def in
+                    LabeledContent(def.title) { ShortcutRecorder(definition: def) }
+                }
+            } header: {
+                Text("Keyboard Shortcuts")
+            } footer: {
+                Text("Click a shortcut and press the new keys. Delete removes it, Esc cancels. Window shortcuts are in the Windows section.")
             }
             Section("General") {
                 Toggle("Open at login", isOn: $launchAtLogin)
@@ -280,6 +279,7 @@ struct SettingsTab: View {
                     }
                 }
             }
+            UpdateSection()
             Section {
                 LabeledContent("Version", value: Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0")
                 Button("Quit MacMate") { NSApp.terminate(nil) }

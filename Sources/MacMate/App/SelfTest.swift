@@ -1,9 +1,13 @@
 import AppKit
+import ImageIO
 import SwiftUI
 
 /// `MacMate --selftest` exercises the non-visual parts and prints what it finds.
 enum SelfTest {
     static var failures = 0
+    /// Set by `--ci`: running on a virtual machine with no battery, audio, displays, pointing devices or
+    /// third-party apps. Checks that need real hardware or installed apps must be skipped when this is true.
+    static var ci = false
 
     static func check(_ name: String, _ ok: Bool, _ detail: String = "") {
         if !ok { failures += 1 }
@@ -16,13 +20,15 @@ enum SelfTest {
         _ = NSApplication.shared
         UserDefaults.registerMacMateDefaults()
 
-        print("== Battery")
         let b = BatteryService.read()
+        print("== Battery")
         print(b)
-        check("battery present", b.hasBattery)
-        check("battery percent plausible", (0...100).contains(b.percent))
-        check("capacity read", b.maxMah > 1000 && b.designMah > 1000, "\(b.currentMah)/\(b.maxMah)/\(b.designMah) mAh, \(String(format: "%.1f", b.fullWh)) Wh full")
-        check("system load read", b.systemLoadW > 0.5 && b.systemLoadW < 200, Fmt.watts(b.systemLoadW))
+        if !ci {
+            check("battery present", b.hasBattery)
+            check("battery percent plausible", (0...100).contains(b.percent))
+            check("capacity read", b.maxMah > 1000 && b.designMah > 1000, "\(b.currentMah)/\(b.maxMah)/\(b.designMah) mAh, \(String(format: "%.1f", b.fullWh)) Wh full")
+            check("system load read", b.systemLoadW > 0.5 && b.systemLoadW < 200, Fmt.watts(b.systemLoadW))
+        }
 
         print("== Energy")
         let energy = EnergyMonitor.shared
@@ -32,10 +38,12 @@ enum SelfTest {
             print(String(format: "  %-28@ %8@  cpu %5.1f%%  mem %@  pids %d", app.name as NSString, Fmt.watts(app.watts) as NSString,
                          app.cpuPercent, Fmt.mem(app.memBytes), app.pids.count))
         }
-        check("apps sampled", energy.apps.count > 10, "\(energy.apps.count) groups")
-        check("total app power plausible", energy.totalWatts > 0 && energy.totalWatts < max(b.systemLoadW * 1.5, 30),
-              "apps \(Fmt.watts(energy.totalWatts)) vs system \(Fmt.watts(b.systemLoadW))")
-        check("helpers grouped under apps", energy.apps.contains { $0.isApp && $0.pids.count > 1 })
+        if !ci {
+            check("apps sampled", energy.apps.count > 10, "\(energy.apps.count) groups")
+            check("total app power plausible", energy.totalWatts > 0 && energy.totalWatts < max(b.systemLoadW * 1.5, 30),
+                  "apps \(Fmt.watts(energy.totalWatts)) vs system \(Fmt.watts(b.systemLoadW))")
+            check("helpers grouped under apps", energy.apps.contains { $0.isApp && $0.pids.count > 1 })
+        }
 
         print("== System")
         let mon = SystemMonitor.shared
@@ -47,7 +55,9 @@ enum SelfTest {
         check("cpu sampled", s.perCore.count == ProcessInfo.processInfo.processorCount && s.cpuTotal >= 0 && s.cpuTotal <= 100)
         check("memory sampled", s.memUsed > 0 && s.memUsed <= s.memTotal)
         check("disk sampled", s.diskTotal > 0 && s.diskFree < s.diskTotal)
-        check("gpu sampled", s.gpu != nil)
+        if !ci {
+            check("gpu sampled", s.gpu != nil)
+        }
 
         print("== Keep awake")
         KeepAwake.shared.start(minutes: 1)
@@ -101,7 +111,9 @@ enum SelfTest {
         mouse.start()
         mouse.refreshDevices()
         for d in mouse.devices { print("  device: \(d.name) vendor \(d.vendorID) transport \(d.transport) thirdParty \(d.isThirdPartyMouse)") }
-        check("pointing devices enumerated", !mouse.devices.isEmpty)
+        if !ci {
+            check("pointing devices enumerated", !mouse.devices.isEmpty)
+        }
         check("built-in trackpad not treated as a mouse", !mouse.devices.contains { $0.isThirdPartyMouse && $0.name.lowercased().contains("apple") })
 
         print("== Uninstaller")
@@ -129,7 +141,9 @@ enum SelfTest {
         check("allows app", Uninstaller.isSafeToRemove("/Applications/Foo.app"))
         check("allows npm cache", Uninstaller.isSafeToRemove(home + "/.npm/_cacache"))
         let apps = Uninstaller.scanApps()
-        check("installed apps found", apps.count > 3, "\(apps.count) apps")
+        if !ci {
+            check("installed apps found", apps.count > 3, "\(apps.count) apps")
+        }
         let ids = apps.map(\.bundleID)
         for app in apps.filter({ ["Google Chrome", "Firefox", "WhatsApp", "Slack"].contains($0.name) }).prefix(3) {
             let t = Date()
@@ -141,11 +155,13 @@ enum SelfTest {
         }
 
         print("== Trash round trip")
-        let scratch = home + "/Library/Caches/macmate-selftest-\(UUID().uuidString)"
-        try? FileManager.default.createDirectory(atPath: scratch + "/inner", withIntermediateDirectories: true)
-        try? "x".write(toFile: scratch + "/inner/file.txt", atomically: true, encoding: .utf8)
-        let result = Uninstaller.moveToTrash([scratch, scratch + "/inner"])
-        check("item moved to Trash", result.trashed == [scratch] && !FileManager.default.fileExists(atPath: scratch), "\(result)")
+        if !ci {
+            let scratch = home + "/Library/Caches/macmate-selftest-\(UUID().uuidString)"
+            try? FileManager.default.createDirectory(atPath: scratch + "/inner", withIntermediateDirectories: true)
+            try? "x".write(toFile: scratch + "/inner/file.txt", atomically: true, encoding: .utf8)
+            let result = Uninstaller.moveToTrash([scratch, scratch + "/inner"])
+            check("item moved to Trash", result.trashed == [scratch] && !FileManager.default.fileExists(atPath: scratch), "\(result)")
+        }
 
         print("== Junk scan")
         let t = Date()
@@ -168,14 +184,26 @@ enum SelfTest {
         }
         if let cg = image.cgImage(forProposedRect: nil, context: nil, hints: nil) {
             let text = ScreenOCR.recognize(cg)
-            check("text recognised", text.contains("MacMate") && text.contains("12345"), text)
+            check("text recognised", text.lowercased().contains("macmate") && text.contains("12345"),
+                  text.isEmpty ? "no text; error: \(ScreenOCR.lastError.map { "\($0)" } ?? "none")" : text)
         }
 
         print("== Audio / displays")
-        MicMute.shared.refresh()
-        check("microphone found", !MicMute.shared.deviceName.isEmpty, "\(MicMute.shared.deviceName), muted: \(MicMute.shared.muted)")
-        DisplayDimmer.shared.refreshDisplays()
-        check("displays listed", !DisplayDimmer.shared.displays.isEmpty, DisplayDimmer.shared.displays.map(\.name).joined(separator: ", "))
+        if !ci {
+            MicMute.shared.refresh()
+            check("microphone found", !MicMute.shared.deviceName.isEmpty, "\(MicMute.shared.deviceName), muted: \(MicMute.shared.muted)")
+            DisplayDimmer.shared.refreshDisplays()
+            check("displays listed", !DisplayDimmer.shared.displays.isEmpty, DisplayDimmer.shared.displays.map(\.name).joined(separator: ", "))
+        }
+
+        runHistoryChecks()
+        runKeyboardChecks()
+        runCalendarChecks()
+        runUpdaterChecks()
+        runPreviewChecks()
+        runCleanupChecks()
+        runSoundChecks()
+        runDisplayChecks()
 
         if Permissions.accessibility {
             print("== Windows (live)")
@@ -205,7 +233,41 @@ enum Snapshot {
         DisplayDimmer.shared.refreshDisplays()
         AppState.shared.accessibilityGranted = true
         Conflicts.suppressed = true
+        try? FileManager.default.createDirectory(atPath: directory, withIntermediateDirectories: true)
 
+        loadSampleData()
+        SelfTest.spin(9)
+
+        var frames: [String] = []
+        for tab in PanelTab.allCases {
+            AppState.shared.tab = tab
+            let path = "\(directory)/\(tab.rawValue).png"
+            render(PanelView().background(.regularMaterial), size: CGSize(width: 400, height: 620), to: path)
+            frames.append(path)
+        }
+        makeGIF(frames: frames, to: (directory as NSString).deletingLastPathComponent + "/demo.gif", delay: 1.8)
+
+        let panel = CGSize(width: 400, height: 620)
+        render(Form { BatteryHistorySections(); DeviceBatterySection() }.formStyle(.grouped).background(.regularMaterial), size: panel, to: "\(directory)/history.png")
+        render(Form { KeyboardSection() }.formStyle(.grouped).background(.regularMaterial), size: panel, to: "\(directory)/keyboard.png")
+        render(Form { DisplaysSection() }.formStyle(.grouped).background(.regularMaterial), size: panel, to: "\(directory)/displays.png")
+        renderCleanup(directory: directory)
+
+        // Other renderers write to a scratch folder; keep the images the README uses.
+        let scratch = NSTemporaryDirectory() + "macmate-renders-\(UUID().uuidString)"
+        try? FileManager.default.createDirectory(atPath: scratch, withIntermediateDirectories: true)
+        renderCleanupTools(directory: scratch)
+        SelfTest.renderPreviews(directory: scratch)
+        for (from, to) in [("cleanup-startup", "startup"), ("cleanup-leftovers", "leftovers"),
+                           ("cleanup-largefiles", "largefiles"), ("previews-1", "switcher"), ("previews-3", "dock")] {
+            try? FileManager.default.removeItem(atPath: "\(directory)/\(to).png")
+            try? FileManager.default.moveItem(atPath: "\(scratch)/\(from).png", toPath: "\(directory)/\(to).png")
+        }
+        try? FileManager.default.removeItem(atPath: scratch)
+    }
+
+    /// Made-up but realistic data for every section, so no personal information ends up in the images.
+    private static func loadSampleData() {
         func usage(_ name: String, _ path: String, _ watts: Double, _ cpu: Double, _ memGB: Double, _ joules: Double) -> AppUsage {
             AppUsage(id: path, name: name, bundlePath: path, pids: [1], watts: watts, cpuPercent: cpu,
                      memBytes: UInt64(memGB * 1_073_741_824), sessionJoules: joules, isApp: true)
@@ -219,21 +281,86 @@ enum Snapshot {
             usage("Notes", "/System/Applications/Notes.app", 0.04, 0.6, 0.2, 120),
             usage("Maps", "/System/Applications/Maps.app", 0.02, 0.3, 0.3, 60),
         ])
+        loadSampleHistory()
+        DeviceBatteries.shared.loadDemo([
+            DeviceBattery(name: "AirPods Pro", kind: .headphones, left: 82, right: 79, caseLevel: 100),
+            DeviceBattery(name: "Magic Keyboard", kind: .keyboard, main: 64),
+            DeviceBattery(name: "Wireless Mouse", kind: .mouse, main: 18),
+        ])
         MouseManager.shared.loadDemo([
             PointingDevice(id: "demo", name: "Wireless Mouse", vendorID: 1, productID: 1, transport: "Bluetooth", isThirdPartyMouse: true, battery: 82),
         ])
+        UserDefaults.standard.register(defaults: [Keys.keyboardHyper: true])
+        KeyRemapper.shared.loadDemo([KeyRemapPair(from: .section, to: .grave), KeyRemapPair(from: .rightCommand, to: .rightOption)],
+                                    keyboards: [KeyRemapKeyboard(name: "Apple Internal Keyboard / Trackpad", isBuiltIn: true),
+                                                KeyRemapKeyboard(name: "Mechanical Keyboard", isBuiltIn: false)])
+        let now = Date()
+        func sound(_ name: String, _ path: String, _ id: String, playing: Bool, ago: TimeInterval = 0) -> SoundApp {
+            SoundApp(id: path, name: name, iconPath: path, settingsKey: id, isPlaying: playing, lastPlayed: now.addingTimeInterval(-ago), processCount: 1)
+        }
+        AudioMixer.shared.loadDemo(
+            outputs: [SoundDevice(id: 101, uid: "a", name: "MacBook Pro Speakers"), SoundDevice(id: 102, uid: "b", name: "AirPods Pro")],
+            inputs: [SoundDevice(id: 201, uid: "c", name: "MacBook Pro Microphone")],
+            volume: 0.62,
+            apps: [sound("Safari", "/Applications/Safari.app", "com.apple.Safari", playing: true),
+                   sound("Music", "/System/Applications/Music.app", "com.apple.Music", playing: true),
+                   sound("FaceTime", "/System/Applications/FaceTime.app", "com.apple.FaceTime", playing: false, ago: 130),
+                   sound("Podcasts", "/System/Applications/Podcasts.app", "com.apple.podcasts", playing: false, ago: 20)],
+            settings: ["com.apple.Safari": SoundAppSetting(volume: 0.45, muted: false),
+                       "com.apple.FaceTime": SoundAppSetting(volume: 0.8, muted: true)])
+        CalendarService.shared.loadDemo()
+        DisplayControl.shared.loadDemo([
+            DisplayDevice(id: 1, name: "Built-in Retina Display", builtIn: true, control: .system, brightness: 0.64),
+            DisplayDevice(id: 2, name: "Studio Monitor 27", builtIn: false, control: .ddc(maximum: 100), brightness: 0.55),
+        ])
+        Updater.shared.loadDemo(.upToDate, lastCheck: now.addingTimeInterval(-3 * 3600))
         for text in ["https://developer.apple.com/design/human-interface-guidelines", "let total = items.reduce(0, +)",
                      "Meeting moved to 3:30 pm", "#0A84FF", "The quick brown fox jumps over the lazy dog"] {
             ClipboardHistory.shared.record(text, source: ["Safari", "Xcode", "Mail", "MacMate", "Notes"].randomElement())
         }
-        SelfTest.spin(9)
-        try? FileManager.default.createDirectory(atPath: directory, withIntermediateDirectories: true)
+    }
 
-        for tab in PanelTab.allCases {
-            AppState.shared.tab = tab
-            render(PanelView().background(.regularMaterial), size: CGSize(width: 400, height: 620), to: "\(directory)/\(tab.rawValue).png")
+    /// A week of typical laptop days: on battery during the day, a top-up in the evening, asleep at night.
+    private static func loadSampleHistory() {
+        let calendar = Calendar.current
+        let now = Date()
+        var samples: [BatteryLogSample] = []
+        var hours: [BatteryLogHour] = []
+        let apps: [(key: String, name: String, joulesPerHour: Double)] = [
+            ("/Applications/Xcode.app", "Xcode", 1900), ("/Applications/Safari.app", "Safari", 1500),
+            ("/System/Applications/Music.app", "Music", 520), ("/System/Applications/Mail.app", "Mail", 260),
+            ("/System/Applications/Photos.app", "Photos", 180), ("/System/Applications/Notes.app", "Notes", 70),
+        ]
+        var generator = SystemRandomNumberGenerator()
+        for dayOffset in (0...7).reversed() {
+            guard let day = calendar.date(byAdding: .day, value: -dayOffset, to: calendar.startOfDay(for: now)) else { continue }
+            func at(_ hour: Double) -> Date { day.addingTimeInterval(hour * 3600) }
+            var t = 8.5, level = 100.0
+            let drainRate = Double.random(in: 7.5...10.5, using: &generator)
+            while t < 22.5 {
+                let date = at(t)
+                guard date <= now else { break }
+                let charging = t >= 17.5 && t < 18.75
+                let plugged = t < 9.25 || charging
+                if charging { level = min(100, level + 9) } else if !plugged { level = max(8, level - drainRate / 6) }
+                samples.append(BatteryLogSample(t: date.timeIntervalSince1970, percent: Int(level.rounded()),
+                                                charging: charging, plugged: plugged, watts: plugged ? 18 : 7.5))
+                t += 1.0 / 6
+            }
+            for hour in 9..<22 {
+                let start = at(Double(hour)).timeIntervalSince1970
+                guard start < now.timeIntervalSince1970 else { break }
+                var joules: [String: Double] = [:]
+                for app in apps { joules[app.key] = app.joulesPerHour * Double.random(in: 0.5...1.4, using: &generator) }
+                hours.append(BatteryLogHour(start: start, joules: joules))
+            }
         }
+        var names: [String: BatteryLogApp] = [:]
+        for app in apps { names[app.key] = BatteryLogApp(name: app.name, bundlePath: app.key) }
+        BatteryHistory.shared.loadDemo(samples: samples, hours: hours, apps: names)
+    }
 
+    private static func renderCleanup(directory: String) {
         let home = NSHomeDirectory()
         let chrome = InstalledApp(name: "Google Chrome", bundleID: "com.google.Chrome", version: "157.0", path: "/Applications/Google Chrome.app", size: 1_540_000_000)
         func item(_ path: String, _ category: String, _ size: UInt64, admin: Bool = false) -> RelatedItem {
@@ -264,15 +391,32 @@ enum Snapshot {
         render(JunkView().background(.regularMaterial), size: CGSize(width: 640, height: 600), to: "\(directory)/junk.png")
     }
 
+    /// Writes the given PNGs as a looping animated GIF.
+    static func makeGIF(frames: [String], to path: String, delay: Double) {
+        let url = URL(fileURLWithPath: path) as CFURL
+        guard let destination = CGImageDestinationCreateWithURL(url, "com.compuserve.gif" as CFString, frames.count, nil) else { return }
+        CGImageDestinationSetProperties(destination, [kCGImagePropertyGIFDictionary: [kCGImagePropertyGIFLoopCount: 0]] as CFDictionary)
+        let frameProperties = [kCGImagePropertyGIFDictionary: [kCGImagePropertyGIFDelayTime: delay]] as CFDictionary
+        for frame in frames {
+            guard let source = CGImageSourceCreateWithURL(URL(fileURLWithPath: frame) as CFURL, nil),
+                  let image = CGImageSourceCreateImageAtIndex(source, 0, nil) else { continue }
+            CGImageDestinationAddImage(destination, image, frameProperties)
+        }
+        if CGImageDestinationFinalize(destination) { print("wrote \(path)") }
+    }
+
     /// A borderless window that may become key, so controls draw in their active colours.
-    private final class RenderWindow: NSWindow {
+    final class RenderWindow: NSWindow {
         override var canBecomeKey: Bool { true }
         override var canBecomeMain: Bool { true }
+        // Controls draw in their active colours only in the key window.
+        override var isKeyWindow: Bool { true }
+        override var isMainWindow: Bool { true }
         override func constrainFrameRect(_ frameRect: NSRect, to screen: NSScreen?) -> NSRect { frameRect }
     }
 
-    private static func render<V: View>(_ view: V, size: CGSize, to path: String) {
-        let host = NSHostingView(rootView: view.frame(width: size.width, height: size.height))
+    static func render<V: View>(_ view: V, size: CGSize, to path: String) {
+        let host = NSHostingView(rootView: view.frame(width: size.width, height: size.height).environment(\.controlActiveState, .key))
         let window = RenderWindow(contentRect: CGRect(origin: CGPoint(x: -3000, y: -3000), size: size), styleMask: [.borderless], backing: .buffered, defer: false)
         window.contentView = host
         NSApp.activate()

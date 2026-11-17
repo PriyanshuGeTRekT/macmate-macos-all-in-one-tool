@@ -76,6 +76,7 @@ struct WindowsTab: View {
     @AppStorage(Keys.tileGap) private var gap = 0
     @AppStorage(Keys.switcherEnabled) private var switcher = false
     @ViewState private var showShortcuts = false
+    @ObservedObject private var shortcuts = ShortcutStore.shared
 
     private let grid: [TileAction] = [
         .leftHalf, .rightHalf, .topHalf, .bottomHalf, .maximize,
@@ -93,7 +94,7 @@ struct WindowsTab: View {
                         Button { manager.perform(action) } label: {
                             TileGlyph(unit: action.unitRect ?? .zero).frame(maxWidth: .infinity)
                         }
-                        .help("\(action.title)  ⌃⌥\(action.keyLabel)")
+                        .help(shortcuts.combo(for: Shortcuts.tile(action)).map { "\(action.title)  \($0.displayString)" } ?? action.title)
                         .accessibilityLabel(action.title)
                     }
                 }
@@ -112,12 +113,16 @@ struct WindowsTab: View {
             Section {
                 Toggle("Keyboard shortcuts", isOn: $hotkeys)
                     .onChange(of: hotkeys) { _, _ in manager.applySettings() }
-                DisclosureGroup("Shortcut list", isExpanded: $showShortcuts) {
+                DisclosureGroup("Customize shortcuts", isExpanded: $showShortcuts) {
                     ForEach(TileAction.allCases) { action in
                         LabeledContent(action.title) {
-                            Text("⌃⌥\(action.keyLabel)").monospaced().foregroundStyle(.secondary)
+                            ShortcutRecorder(definition: Shortcuts.tile(action))
                         }
                     }
+                    Button("Restore Default Shortcuts") {
+                        shortcuts.resetAll(TileAction.allCases.map(Shortcuts.tile))
+                    }
+                    .disabled(!TileAction.allCases.contains { shortcuts.isCustomized(Shortcuts.tile($0)) })
                 }
                 Toggle("Snap when dragged to a screen edge", isOn: $dragSnap)
                     .onChange(of: dragSnap) { _, _ in manager.applySettings() }
@@ -130,11 +135,12 @@ struct WindowsTab: View {
             } footer: {
                 Text("Hold ⌥ and press Tab to step through every open window, not just apps. Release ⌥ to switch.")
             }
+            WindowPreviewSection()
         }
     }
 
     private var snapFootnote: String {
-        var text = "Press ← or → again to cycle between half, two thirds and one third. Drag to a side for halves, a corner for quarters, the top to maximize, or the bottom for thirds."
+        var text = "Press the left- or right-half shortcut again to cycle between half, two thirds and one third. Drag to a side for halves, a corner for quarters, the top to maximize, or the bottom for thirds."
         if WindowManager.nativeEdgeTilingEnabled {
             text += " macOS has its own edge tiling switched on in Desktop & Dock settings; turn that off if you see two previews."
         }
@@ -162,9 +168,9 @@ private struct TileGlyph: View {
     }
 }
 
-// MARK: - Mouse
+// MARK: - Mouse & Keyboard
 
-struct MouseTab: View {
+struct InputTab: View {
     @ObservedObject private var mouse = MouseManager.shared
     @AppStorage(Keys.mouseEnabled) private var enabled = true
     @AppStorage(Keys.mouseReverse) private var reverse = true
@@ -177,10 +183,12 @@ struct MouseTab: View {
     @AppStorage(Keys.mouseLinear) private var linear = false
     @AppStorage(Keys.mouseSpeedOverride) private var speedOverride = false
     @AppStorage(Keys.mouseSpeed) private var speed = 1.0
+    @AppStorage(Keys.cmdQGuard) private var cmdQGuard = false
+    @AppStorage(Keys.finderCut) private var finderCut = false
 
     var body: some View {
         Form {
-            AccessibilityNotice(reason: "MacMate needs it to adjust scrolling and extra buttons from your mouse.")
+            AccessibilityNotice(reason: "MacMate needs it to adjust your mouse's scrolling and buttons and to add keyboard shortcuts.")
             ConflictNotice(table: Conflicts.mouse, consequence: "Both apps would rewrite the same scroll and button events, which cancels out or doubles the effect. Keep only one of the two running.")
             Section {
                 Toggle("Mouse enhancements", isOn: $enabled)
@@ -240,6 +248,16 @@ struct MouseTab: View {
                 }
             }
             .disabled(!enabled)
+
+            KeyboardSection()
+            Section {
+                Toggle("Hold ⌘Q to quit", isOn: $cmdQGuard)
+                Toggle("Cut and paste files in Finder with ⌘X and ⌘V", isOn: $finderCut)
+            } header: {
+                Text("Keyboard Extras")
+            } footer: {
+                Text("Holding ⌘Q for a moment protects you from quitting an app by accident. Both need Accessibility access.")
+            }
         }
     }
 

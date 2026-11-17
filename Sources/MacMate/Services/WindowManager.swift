@@ -170,10 +170,10 @@ final class WindowManager: ObservableObject {
     func applySettings() {
         let d = UserDefaults.standard
         HotKeyCenter.shared.unregister(group: "tile")
-        if d.bool(forKey: Keys.tileHotkeys) {
-            let mods = HotKeyCenter.control | HotKeyCenter.option
+        if d.bool(forKey: Keys.tileHotkeys), !ShortcutStore.shared.isRecording {
             for action in TileAction.allCases {
-                HotKeyCenter.shared.register(group: "tile", keyCode: action.keyCode, modifiers: mods) { [weak self] in
+                guard let combo = ShortcutStore.shared.combo(for: Shortcuts.tile(action)) else { continue }
+                HotKeyCenter.shared.register(group: "tile", keyCode: combo.keyCode, modifiers: combo.modifiers) { [weak self] in
                     self?.perform(action)
                 }
             }

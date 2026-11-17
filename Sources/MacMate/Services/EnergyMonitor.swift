@@ -16,6 +16,14 @@ struct AppUsage: Identifiable, Equatable {
     var isApp: Bool
 }
 
+/// Energy one app used during one sampling interval (for the battery history).
+struct EnergySlice {
+    let key: String
+    let name: String
+    let bundlePath: String?
+    let joules: Double
+}
+
 private typealias ResponsibleFn = @convention(c) (pid_t) -> pid_t
 
 /// Samples every process the current user can see and groups helpers under their parent app.
@@ -30,6 +38,8 @@ final class EnergyMonitor: ObservableObject {
     @Published private(set) var totalWatts: Double = 0
     @Published private(set) var sessionStart = Date()
     @Published private(set) var sessionJoules: Double = 0
+    /// Called on the sampling queue with each interval's per-app energy. Set it before start().
+    var onSample: (([EnergySlice]) -> Void)?
 
     private struct ProcState {
         var startAbs: UInt64
@@ -156,11 +166,13 @@ final class EnergyMonitor: ObservableObject {
 
         var out: [AppUsage] = []
         out.reserveCapacity(acc.count)
+        var slices: [EnergySlice] = []
         var total = 0.0, session = 0.0
         for (key, a) in acc {
             guard var g = groups[key] else { continue }
             let joules = Double(a.dE) / 1e9
             g.sessionJ += joules
+            if joules > 0.01 { slices.append(EnergySlice(key: key, name: g.name, bundlePath: g.bundlePath, joules: joules)) }
             g.lastSeen = tick
             var watts = g.ema ?? 0
             var cpuPct = 0.0
@@ -183,6 +195,7 @@ final class EnergyMonitor: ObservableObject {
             if tick - g.lastSeen > 2000 && g.sessionJ < 1 { groups[key] = nil }
         }
         out.sort { $0.watts > $1.watts }
+        if let onSample, !slices.isEmpty { onSample(slices) }
         DispatchQueue.main.async {
             self.apps = out
             self.totalWatts = total

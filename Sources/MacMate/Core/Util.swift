@@ -120,6 +120,7 @@ enum Keys {
     static let alertLowLevel = "battery.alertLowLevel"
     static let alertHigh = "battery.alertHigh"
     static let alertHighLevel = "battery.alertHighLevel"
+    static let alertEnergy = "battery.alertEnergy"
     // Keep awake
     static let awakeDisplay = "awake.keepDisplay"
     static let awakeBatteryStop = "awake.stopOnLowBattery"
@@ -157,6 +158,7 @@ extension UserDefaults {
             Keys.alertLowLevel: 20,
             Keys.alertHigh: false,
             Keys.alertHighLevel: 80,
+            Keys.alertEnergy: true,
             Keys.awakeDisplay: true,
             Keys.awakeBatteryStop: true,
             Keys.tileHotkeys: true,

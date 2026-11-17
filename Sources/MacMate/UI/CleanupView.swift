@@ -1,7 +1,45 @@
 import SwiftUI
 
 enum CleanupMode: Hashable {
-    case uninstall, junk
+    case uninstall, junk, startup, leftovers, largeFiles
+
+    /// The tools listed in the sidebar's Cleanup group, in order.
+    static let tools: [CleanupMode] = [.junk, .startup, .leftovers, .largeFiles]
+
+    /// Sidebar tag of a tool (nil for the uninstaller, whose rows are tagged with app paths).
+    var sidebarTag: String? {
+        switch self {
+        case .uninstall: return nil
+        case .junk: return "junk"
+        case .startup: return "startup"
+        case .leftovers: return "leftovers"
+        case .largeFiles: return "largeFiles"
+        }
+    }
+
+    var title: String {
+        switch self {
+        case .uninstall: return "Uninstall Apps"
+        case .junk: return "Junk Cleaner"
+        case .startup: return "Startup Items"
+        case .leftovers: return "Leftovers"
+        case .largeFiles: return "Large & Old Files"
+        }
+    }
+
+    var symbol: String {
+        switch self {
+        case .uninstall: return "trash"
+        case .junk: return "sparkles"
+        case .startup: return "power"
+        case .leftovers: return "shippingbox"
+        case .largeFiles: return "doc.badge.clock"
+        }
+    }
+
+    static func tool(forTag tag: String?) -> CleanupMode? {
+        tools.first { $0.sidebarTag == tag }
+    }
 }
 
 final class CleanupModel: ObservableObject {
@@ -75,8 +113,10 @@ struct CleanupView: View {
     var body: some View {
         NavigationSplitView {
             List(selection: $selection) {
-                Section {
-                    Label("Junk Cleaner", systemImage: "sparkles").tag("junk")
+                Section("Cleanup") {
+                    ForEach(CleanupMode.tools, id: \.self) { tool in
+                        Label(tool.title, systemImage: tool.symbol).tag(tool.sidebarTag ?? "")
+                    }
                 }
                 Section("Applications") {
                     ForEach(apps) { app in
@@ -96,8 +136,13 @@ struct CleanupView: View {
             .searchable(text: $query, placement: .sidebar, prompt: "Search apps")
             .navigationSplitViewColumnWidth(min: 240, ideal: 280, max: 360)
         } detail: {
-            if selection == "junk" {
-                JunkView()
+            if let tool = CleanupMode.tool(forTag: selection) {
+                switch tool {
+                case .startup: StartupItemsView()
+                case .leftovers: LeftoversView()
+                case .largeFiles: LargeFilesView()
+                default: JunkView()
+                }
             } else if let app = model.selectedApp {
                 appDetail(app)
             } else {
@@ -114,14 +159,14 @@ struct CleanupView: View {
         .frame(minWidth: 760, minHeight: 480)
         .onAppear {
             if uninstaller.apps.isEmpty { uninstaller.loadApps() }
-            if model.mode == .junk { selection = "junk" }
+            if let tag = model.mode.sidebarTag { selection = tag }
         }
         .onChange(of: model.mode) { _, mode in
-            if mode == .junk { selection = "junk" } else if selection == "junk" { selection = nil }
+            if let tag = mode.sidebarTag { selection = tag } else if CleanupMode.tool(forTag: selection) != nil { selection = nil }
         }
         .onChange(of: selection) { _, new in
-            if new == "junk" {
-                model.mode = .junk
+            if let tool = CleanupMode.tool(forTag: new) {
+                model.mode = tool
                 model.select(nil)
             } else {
                 model.mode = .uninstall

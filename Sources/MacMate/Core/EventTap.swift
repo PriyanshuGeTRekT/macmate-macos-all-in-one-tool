@@ -8,6 +8,8 @@ final class EventTapHub {
     static let shared = EventTapHub()
     /// Stamped on events MacMate posts itself so the tap lets them straight through.
     static let magic: Int64 = 0x4D41_434D
+    /// Raw CGEventType of NX_SYSDEFINED events (media keys, brightness keys). Subtype 8 carries the key in data1.
+    static let systemDefinedType: UInt32 = 14
 
     /// A handler returns true to swallow the event. Handlers run on the tap thread.
     typealias Handler = (CGEventType, CGEvent) -> Bool
@@ -25,7 +27,9 @@ final class EventTapHub {
         if isRunning { return true }
         guard Permissions.accessibility else { return false }
         let types: [CGEventType] = [.keyDown, .keyUp, .flagsChanged, .scrollWheel, .otherMouseDown, .otherMouseUp]
-        let mask = types.reduce(CGEventMask(0)) { $0 | (CGEventMask(1) << CGEventMask($1.rawValue)) }
+        var mask = types.reduce(CGEventMask(0)) { $0 | (CGEventMask(1) << CGEventMask($1.rawValue)) }
+        // Media and brightness keys arrive as NX_SYSDEFINED ("system defined") events.
+        mask |= CGEventMask(1) << CGEventMask(EventTapHub.systemDefinedType)
         guard let port = CGEvent.tapCreate(tap: .cgSessionEventTap, place: .headInsertEventTap, options: .defaultTap,
                                            eventsOfInterest: mask, callback: eventTapCallback, userInfo: nil) else { return false }
         tap = port

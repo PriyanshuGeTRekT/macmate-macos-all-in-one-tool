@@ -4,7 +4,7 @@ import Combine
 import SwiftUI
 
 enum PanelTab: String, CaseIterable, Identifiable {
-    case battery, monitor, awake, windows, mouse, clipboard, tools, settings
+    case battery, monitor, awake, windows, input, sound, calendar, clipboard, tools, settings
 
     var id: String { rawValue }
 
@@ -14,7 +14,9 @@ enum PanelTab: String, CaseIterable, Identifiable {
         case .monitor: return "Activity"
         case .awake: return "Keep Awake"
         case .windows: return "Windows"
-        case .mouse: return "Mouse"
+        case .input: return "Mouse & Keyboard"
+        case .sound: return "Sound"
+        case .calendar: return "Calendar"
         case .clipboard: return "Clipboard"
         case .tools: return "Tools"
         case .settings: return "Settings"
@@ -27,7 +29,9 @@ enum PanelTab: String, CaseIterable, Identifiable {
         case .monitor: return "waveform.path.ecg"
         case .awake: return "cup.and.saucer"
         case .windows: return "rectangle.split.2x1"
-        case .mouse: return "computermouse"
+        case .input: return "keyboard"
+        case .sound: return "speaker.wave.2"
+        case .calendar: return "calendar"
         case .clipboard: return "clipboard"
         case .tools: return "wrench.and.screwdriver"
         case .settings: return "gearshape"
@@ -55,8 +59,11 @@ enum Services {
 
     static func startAll() {
         UserDefaults.registerMacMateDefaults()
+        CalendarService.shared.start()
         let battery = BatteryService.shared
+        BatteryHistory.shared.start()
         battery.onChange = { old, new in
+            BatteryHistory.shared.record(new)
             if old.isPluggedIn, !new.isPluggedIn { EnergyMonitor.shared.resetSession() }
             let d = UserDefaults.standard
             let low = d.integer(forKey: Keys.alertLowLevel), high = d.integer(forKey: Keys.alertHighLevel)
@@ -70,14 +77,22 @@ enum Services {
         battery.start()
         EnergyMonitor.shared.start()
         SystemMonitor.shared.start()
+        // First, so the other input handlers already see the Hyper key's modifiers.
+        KeyRemapper.shared.start()
         WindowManager.shared.start()
         MouseManager.shared.start()
         KeyboardFeatures.shared.start()
+        DisplayControl.shared.start()
+        AudioMixer.shared.start()
         WindowSwitcher.shared.start()
+        DockPreviews.shared.start()
         ClipboardHistory.shared.start()
         MicMute.shared.refresh()
         DisplayDimmer.shared.refreshDisplays()
-        registerHotKeys()
+        EnergyAlerts.shared.start()
+        DeviceBatteries.shared.start()
+        Shortcuts.registerAll()
+        Updater.shared.start()
 
         EventTapHub.shared.startIfPossible()
         // Pick up the Accessibility grant as soon as the user flips the switch – no relaunch needed.
@@ -89,13 +104,6 @@ enum Services {
         permissionTimer?.tolerance = 0.5
     }
 
-    private static func registerHotKeys() {
-        let mods = HotKeyCenter.control | HotKeyCenter.option
-        HotKeyCenter.shared.register(group: "tools", keyCode: kVK_ANSI_V, modifiers: mods) { MenuBarPanel.open(.clipboard) }
-        HotKeyCenter.shared.register(group: "tools", keyCode: kVK_ANSI_O, modifiers: mods) { ScreenOCR.capture() }
-        HotKeyCenter.shared.register(group: "tools", keyCode: kVK_ANSI_A, modifiers: mods) { MicMute.shared.toggle() }
-        HotKeyCenter.shared.register(group: "tools", keyCode: kVK_ANSI_P, modifiers: mods) { SystemToggles.pickColor() }
-    }
 }
 
 /// Opens and closes the menu bar panel from code (hotkeys, "paste and dismiss").
@@ -133,6 +141,7 @@ final class StatusBarController: NSObject, NSPopoverDelegate {
         BatteryService.shared.$info.sink { [weak self] _ in self?.scheduleRefresh() }.store(in: &observers)
         KeepAwake.shared.$isActive.sink { [weak self] _ in self?.scheduleRefresh() }.store(in: &observers)
         MicMute.shared.$muted.sink { [weak self] _ in self?.scheduleRefresh() }.store(in: &observers)
+        CalendarService.shared.$menuBarText.sink { [weak self] _ in self?.scheduleRefresh() }.store(in: &observers)
         SystemMonitor.shared.$stats.sink { [weak self] _ in
             let d = UserDefaults.standard
             if d.bool(forKey: Keys.barShowCPU) || d.bool(forKey: Keys.barShowNet) { self?.scheduleRefresh() }
@@ -187,6 +196,7 @@ final class StatusBarController: NSObject, NSPopoverDelegate {
         if d.bool(forKey: Keys.barShowWatts), b.systemLoadW > 0 { parts.append(String(format: "%.1f W", b.systemLoadW)) }
         if d.bool(forKey: Keys.barShowCPU) { parts.append(String(format: "CPU %.0f%%", SystemMonitor.shared.stats.cpuTotal)) }
         if d.bool(forKey: Keys.barShowNet) { parts.append("↓ " + Fmt.rate(SystemMonitor.shared.stats.netDown)) }
+        if let meeting = CalendarService.shared.menuBarText { parts.append(meeting) }
         let title = parts.filter { !$0.isEmpty }.joined(separator: "  ")
 
         let signature = symbols.joined(separator: ",") + "|" + title
@@ -286,6 +296,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationWillTerminate(_ notification: Notification) {
+        BatteryHistory.shared.save()
+        KeyRemapper.shared.restoreOnQuit()
+        AudioMixer.shared.shutdown()
         KeepAwake.shared.stop()
         DisplayDimmer.shared.reset()
     }

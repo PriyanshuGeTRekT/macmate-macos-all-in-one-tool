@@ -40,6 +40,10 @@ final class HotKeyCenter {
         groups[group] = nil
     }
 
+    func unregisterAll() {
+        for group in Array(groups.keys) { unregister(group: group) }
+    }
+
     fileprivate func fire(_ id: UInt32) { handlers[id]?() }
 
     private func install() {

@@ -1,0 +1,57 @@
+name: Feature request
+description: Suggest an idea or an improvement for MacMate.
+title: "[Feature] "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the idea. Please search the existing issues and the [roadmap](https://github.com/PriyanshuGeTRekT/macos-all-in-one-tool#roadmap) first.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem would this solve?
+      description: Describe what you are trying to do and what gets in the way today.
+      placeholder: "I often want to ..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution
+      description: How would you like MacMate to handle it? Which tab or section would it belong to?
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives you use today
+      description: Other apps or workarounds that do this now, if any.
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Battery
+        - Activity
+        - Keep Awake
+        - Windows
+        - Mouse and keyboard
+        - Sound and displays
+        - Calendar
+        - Clipboard
+        - Tools and cleanup
+        - Settings and menu bar
+        - Something new
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Anything else?
+      description: Mockups, screenshots or links that help explain the idea.

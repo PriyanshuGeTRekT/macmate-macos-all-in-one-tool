@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://priyanshugetrekt.github.io/macos-all-in-one-tool/sitemap.xml

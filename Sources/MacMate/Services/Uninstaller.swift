@@ -99,14 +99,14 @@ final class Uninstaller: ObservableObject {
 
     // MARK: Leftover search
 
-    private struct Location {
+    struct Location {
         let path: String
         let category: String
         let allowNameMatch: Bool
         let allowSuffixMatch: Bool
     }
 
-    private static var locations: [Location] {
+    static var locations: [Location] {
         let home = NSHomeDirectory()
         var list = [
             Location(path: home + "/Library/Application Support", category: "Application Support", allowNameMatch: true, allowSuffixMatch: false),

@@ -2,8 +2,9 @@ import AppKit
 
 let arguments = CommandLine.arguments
 if arguments.contains("--selftest") {
+    SelfTest.ci = arguments.contains("--ci")
     SelfTest.run()
-    exit(0)
+    exit(SelfTest.failures == 0 ? 0 : 1)
 }
 if let i = arguments.firstIndex(of: "--snapshot"), i + 1 < arguments.count {
     Snapshot.run(directory: arguments[i + 1])

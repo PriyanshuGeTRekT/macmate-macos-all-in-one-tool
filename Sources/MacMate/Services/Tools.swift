@@ -144,12 +144,23 @@ final class MicMute: ObservableObject {
 // MARK: - Screen text capture (OCR)
 
 enum ScreenOCR {
+    /// The last recognition error, for diagnostics.
+    static var lastError: Error?
+
     static func recognize(_ image: CGImage) -> String {
-        let request = VNRecognizeTextRequest()
-        request.recognitionLevel = .accurate
-        request.usesLanguageCorrection = true
-        try? VNImageRequestHandler(cgImage: image, options: [:]).perform([request])
-        return (request.results ?? []).compactMap { $0.topCandidates(1).first?.string }.joined(separator: "\n")
+        for level in [VNRequestTextRecognitionLevel.accurate, .fast] {
+            let request = VNRecognizeTextRequest()
+            request.recognitionLevel = level
+            request.usesLanguageCorrection = true
+            do {
+                try VNImageRequestHandler(cgImage: image, options: [:]).perform([request])
+                let text = (request.results ?? []).compactMap { $0.topCandidates(1).first?.string }.joined(separator: "\n")
+                if !text.isEmpty { return text }
+            } catch {
+                lastError = error
+            }
+        }
+        return ""
     }
 
     /// Lets the user drag a rectangle, reads the text in it and puts it on the clipboard.
