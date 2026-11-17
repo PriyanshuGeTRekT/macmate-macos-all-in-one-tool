@@ -29,9 +29,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .build
-          key: ${{ runner.os }}-spm-${{ hashFiles('Package.swift', 'Sources/**') }}
+          key: ${{ runner.os }}-spm-${{ github.event.repository.name }}-${{ hashFiles('Package.swift', 'Sources/**') }}
           restore-keys: |
-            ${{ runner.os }}-spm-
+            ${{ runner.os }}-spm-${{ github.event.repository.name }}-
 
       - name: Build
         run: swift build -c release
