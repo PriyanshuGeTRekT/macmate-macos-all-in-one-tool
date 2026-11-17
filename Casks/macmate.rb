@@ -2,10 +2,10 @@ cask "macmate" do
   version "1.1.0"
   sha256 "72859d0a98fcc0c597b69f2b854a8d10ae7a79090f1a9e224f03d06968c9efd2"
 
-  url "https://github.com/PriyanshuGeTRekT/macos-all-in-one-tool/releases/download/v#{version}/MacMate-#{version}.zip"
+  url "https://github.com/PriyanshuGeTRekT/macmate-macos-all-in-one-tool/releases/download/v#{version}/MacMate-#{version}.zip"
   name "MacMate"
   desc "All-in-one menu bar utility for battery, windows, mouse, audio and cleanup"
-  homepage "https://priyanshugetrekt.github.io/macos-all-in-one-tool/"
+  homepage "https://priyanshugetrekt.github.io/macmate-macos-all-in-one-tool/"
 
   livecheck do
     url :url

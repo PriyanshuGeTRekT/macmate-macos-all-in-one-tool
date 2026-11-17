@@ -6,7 +6,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Thanks for the idea. Please search the existing issues and the [roadmap](https://github.com/PriyanshuGeTRekT/macos-all-in-one-tool#roadmap) first.
+        Thanks for the idea. Please search the existing issues and the [roadmap](https://github.com/PriyanshuGeTRekT/macmate-macos-all-in-one-tool#roadmap) first.
 
   - type: textarea
     id: problem

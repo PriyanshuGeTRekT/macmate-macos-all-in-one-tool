@@ -2,8 +2,8 @@
 
 Thanks for helping make MacMate better. Bug reports, ideas and pull requests are all welcome.
 
-- **Found a bug?** Open a [bug report](https://github.com/PriyanshuGeTRekT/macos-all-in-one-tool/issues/new/choose).
-- **Have an idea?** Open a [feature request](https://github.com/PriyanshuGeTRekT/macos-all-in-one-tool/issues/new/choose). For bigger changes, please open an issue before you start coding so we can agree on the approach.
+- **Found a bug?** Open a [bug report](https://github.com/PriyanshuGeTRekT/macmate-macos-all-in-one-tool/issues/new/choose).
+- **Have an idea?** Open a [feature request](https://github.com/PriyanshuGeTRekT/macmate-macos-all-in-one-tool/issues/new/choose). For bigger changes, please open an issue before you start coding so we can agree on the approach.
 - **Found a security problem?** Please don't open an issue. See [SECURITY.md](SECURITY.md).
 
 ## Requirements
@@ -18,8 +18,8 @@ xcode-select --install
 ## Building
 
 ```bash
-git clone https://github.com/PriyanshuGeTRekT/macos-all-in-one-tool.git
-cd macos-all-in-one-tool
+git clone https://github.com/PriyanshuGeTRekT/macmate-macos-all-in-one-tool.git
+cd macmate-macos-all-in-one-tool
 ./build.sh
 ```
 

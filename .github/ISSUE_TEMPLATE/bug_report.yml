@@ -6,7 +6,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Thanks for taking the time to report a problem. Please check the [FAQ](https://github.com/PriyanshuGeTRekT/macos-all-in-one-tool#faq) and the [known limitations](https://github.com/PriyanshuGeTRekT/macos-all-in-one-tool#known-limitations) first, and search the existing issues to see if it has already been reported.
+        Thanks for taking the time to report a problem. Please check the [FAQ](https://github.com/PriyanshuGeTRekT/macmate-macos-all-in-one-tool#faq) and the [known limitations](https://github.com/PriyanshuGeTRekT/macmate-macos-all-in-one-tool#known-limitations) first, and search the existing issues to see if it has already been reported.
 
   - type: input
     id: macos-version

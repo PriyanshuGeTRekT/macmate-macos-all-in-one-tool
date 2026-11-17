@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://priyanshugetrekt.github.io/macos-all-in-one-tool/sitemap.xml
+Sitemap: https://priyanshugetrekt.github.io/macmate-macos-all-in-one-tool/sitemap.xml

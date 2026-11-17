@@ -2,7 +2,7 @@
 
 ## Supported versions
 
-Only the [latest release](https://github.com/PriyanshuGeTRekT/macos-all-in-one-tool/releases/latest) of MacMate receives security fixes. Please update to it and check that the problem still happens before reporting.
+Only the [latest release](https://github.com/PriyanshuGeTRekT/macmate-macos-all-in-one-tool/releases/latest) of MacMate receives security fixes. Please update to it and check that the problem still happens before reporting.
 
 | Version        | Supported |
 | -------------- | --------- |
@@ -15,7 +15,7 @@ Only the [latest release](https://github.com/PriyanshuGeTRekT/macos-all-in-one-t
 
 Report them privately through GitHub:
 
-1. Open the [Security tab](https://github.com/PriyanshuGeTRekT/macos-all-in-one-tool/security) of this repository.
+1. Open the [Security tab](https://github.com/PriyanshuGeTRekT/macmate-macos-all-in-one-tool/security) of this repository.
 2. Click **Report a vulnerability**.
 3. Describe the problem, the MacMate and macOS versions affected, and the steps to reproduce it. A proof of concept helps.
 

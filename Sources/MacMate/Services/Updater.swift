@@ -100,7 +100,7 @@ struct UpdateRelease: Equatable {
     let assetURL: URL?
     let assetSize: Int64
 
-    static let repository = "PriyanshuGeTRekT/macos-all-in-one-tool"
+    static let repository = "PriyanshuGeTRekT/macmate-macos-all-in-one-tool"
     static let latestURL = URL(string: "https://api.github.com/repos/\(repository)/releases/latest")!
     static let releasesPage = URL(string: "https://github.com/\(repository)/releases/latest")!
 
