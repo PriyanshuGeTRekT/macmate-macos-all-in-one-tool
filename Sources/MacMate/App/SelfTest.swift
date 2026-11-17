@@ -150,7 +150,7 @@ enum SelfTest {
             let items = Uninstaller.findRelated(for: app, otherBundleIDs: ids)
             print("  \(app.name) [\(app.bundleID)] → \(items.count) related items in \(String(format: "%.1f", Date().timeIntervalSince(t)))s")
             for i in items { print("     \(i.category): \(i.displayPath)  \(Fmt.bytes(i.size))\(i.needsAdmin ? "  (admin)" : "")") }
-            check("\(app.name) leftovers found", !items.isEmpty)
+            if !ci { check("\(app.name) leftovers found", !items.isEmpty) }
             check("\(app.name) leftovers all safe", items.allSatisfy { Uninstaller.isSafeToRemove($0.path) })
         }
 
@@ -205,7 +205,7 @@ enum SelfTest {
         runSoundChecks()
         runDisplayChecks()
 
-        if Permissions.accessibility {
+        if Permissions.accessibility && !ci {
             print("== Windows (live)")
             let wins = WindowSwitcher.listWindows()
             for w in wins.prefix(8) { print("  \(w.appName): \(w.title)") }
